@@ -9,9 +9,11 @@
 #include <stdio.h>
 #include <stdint.h>
 
-enum tokenType : uint8_t
+
+typedef enum tokenType
 {
-    plus = 0,
+    INVALID = 0,
+    plus,
     minus,
     multiply,
     divide,
@@ -23,10 +25,10 @@ enum tokenType : uint8_t
     number,
     id_or_keyword,
     string,
-};
+}tokenType;
 
 typedef struct Token{
-    enum tokenType type;
+    tokenType type;
     unsigned int line_num;
     unsigned int col_num;
     char * data;

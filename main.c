@@ -16,6 +16,7 @@ int main(int argc, char ** argv)
     GArray * tokenStream = ScanFile(argv[1]);
 
 
+    g_array_free(tokenStream, TRUE);
     return 0;
 }
 
