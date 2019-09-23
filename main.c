@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "Scanner/scanner.h"
+#include "scanner.h"
 #include <gmodule.h>
 
 #include <time.h>
-#include <Token.h>
+#include "Token.h"
 
 void printUsage();
 void printToken(Token *);

@@ -34,6 +34,14 @@ typedef enum NodeType
     s_expr
 }NodeType;
 
+typedef struct Node
+{
+    NodeType type;
+    bool terminal;
+    void * data;
+} Node;
+
+
 
 typedef struct ScannerAction
 {

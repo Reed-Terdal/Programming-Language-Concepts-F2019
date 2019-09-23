@@ -5,6 +5,8 @@
 #ifndef JOTT_INTERPRETTER_SCANNERDATA_H
 #define JOTT_INTERPRETTER_SCANNERDATA_H
 
+#include "Token.h"
+
 /**
  * This enum represents the different states that the Jott scanner can be in
  */

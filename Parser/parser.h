@@ -9,14 +9,9 @@
 
 #include <gmodule.h>
 #include <stdbool.h>
+#include "parserData.h"
 
 
 
-typedef struct Node
-{
-    NodeType type;
-    bool terminal;
-    void * data;
-} Node;
 
 GNode * ParseTokenStream(GArray * tokenStream);

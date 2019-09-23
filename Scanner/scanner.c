@@ -3,7 +3,6 @@
 //
 
 #include "scanner.h"
-#include "Token.h"
 #include "scannerData.h"
 #include <errno.h>
 #include <stdlib.h>
