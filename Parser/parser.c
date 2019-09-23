@@ -3,3 +3,10 @@
 //
 
 #include "parser.h"
+
+
+
+GNode * ParseTokenStream(GArray * tokenStream)
+{
+
+}

@@ -3,73 +3,13 @@
 //
 
 #include "scanner.h"
+#include "Token.h"
+#include "scannerData.h"
 #include <errno.h>
 #include <stdlib.h>
 
+
 Token * processCharacter(char c);
-typedef enum scannerState
-{
-    qERR = 0, // having this be 0 makes our list initialization much easier
-    q0, // Empty
-    q1, // Id or keyword
-    q2, // period
-    q3, // number (floating)
-    q4, // number (integral)
-    q5, // = (assignment)
-    q6, // start paren
-    q7, // end paren
-    q8, // end_stmt
-    q9, // plus
-    q10, // minus
-    q11, // multiply
-    q12, // divide
-    q13, // power
-    q14, // start quote
-    q15, // end quote
-} scannerState;
-
-static scannerState current_state;
-
-#define FINAL_ACCEPT_STATE [0 ... 255]=q0
-static scannerState state_LUT[17][256] = {
-        /* qERR*/ {},//Default initialized, qERR only leads to qERR
-        /* q0  */ {['A'...'Z']=q1, ['a'...'z']=q1, ['.']=q2, ['0'...'9']=q3, ['=']=q5, ['(']=q6, [')']=q7, [';']=q8, ['+']=q9, ['-']=q10, ['*']=q11, ['/']=q12, ['^']=q13, ['"']=q14, [',']=q0, ['\r']=q0, ['\n']=q0, [' ']=q0, ['\t']=q0},
-        /* q1  */ {['A'...'Z']=q1, ['a'...'z']=q1,['0'...'9']=q1,   [0 ... '/']=q0, [':'...'@']=q0, ['['...'`']=q0, ['{'...255]=q0},
-        /* q2  */ {['0'...'9']=q4,                                  [0 ... '/']=q0, [':'... 255]=q0},
-        /* q3  */ {['0'...'9']=q3, ['.']=q4,                        [0 ... '-']=q0, ['/']=q0, [':'... 255]=q0},
-        /* q4  */ {['0'...'9']=q4,                                  [0 ... '/']=q0, [':'... 255]=q0},
-        /* q5  */ {FINAL_ACCEPT_STATE},
-        /* q6  */ {FINAL_ACCEPT_STATE},
-        /* q7  */ {FINAL_ACCEPT_STATE},
-        /* q8  */ {FINAL_ACCEPT_STATE},
-        /* q9  */ {FINAL_ACCEPT_STATE},
-        /* q10 */ {FINAL_ACCEPT_STATE},
-        /* q11 */ {FINAL_ACCEPT_STATE},
-        /* q12 */ {FINAL_ACCEPT_STATE},
-        /* q13 */ {FINAL_ACCEPT_STATE},
-        /* q14 */ {['A'...'Z']=q14, ['a'...'z']=q14, ['0'...'9']=q14, [' ']=q14, ['"']=q15},
-        /* q15 */ {FINAL_ACCEPT_STATE}
-};
-
-static tokenType tokenType_LUT[17] = {
-        /*qERR*/ INVALID,
-        /*q0  */ INVALID,
-        /*q1  */ id_or_keyword,
-        /*q2  */ INVALID,
-        /*q3  */ number,
-        /*q4  */ number,
-        /*q5  */ assign,
-        /*q6  */ start_paren,
-        /*q7  */ end_paren,
-        /*q8  */ end_stmt,
-        /*q9  */ plus,
-        /*q10 */ minus,
-        /*q11 */ multiply,
-        /*q12 */ divide,
-        /*q13 */ power,
-        /*q14 */ INVALID,
-        /*q15 */ string
-        };
 
 GArray * ScanFile(char * filePath)
 {
@@ -79,21 +19,27 @@ GArray * ScanFile(char * filePath)
         fprintf(stderr, "Scanner Error:\nCould not open source file located at: %s\nError Number: %d\n%s\n", filePath, errno, strerror(errno));
         exit(-1);
     }
+    // Reset our scanner's state so that it can process our new file
     current_state = q0;
     GArray * token_stream = g_array_new(TRUE, TRUE, sizeof(Token));
 
+    // Loop through the input file one character at a time until the EOF is reached
     for(int c = fgetc(source); c != EOF; c = fgetc(source))
     {
         Token * next_token = processCharacter((char)c);
+        // NULL tokens are expected and common, if the processed character does not terminate a token it will return
+        // NULL until another token is passed that will terminate the current token
         if(next_token != NULL)
         {
+            // GArray copies input, so we need to free to prevent mem leaks
             g_array_append_val(token_stream, *next_token);
             free(next_token);
         }
     }
     if(current_state != q0 && current_state != qERR)
     {
-        // Feed in a dummy character in case there is a dangling token
+        // If we are in here it means that we are still processing a token, we need to send in a character to flush it
+        // out, a newline will work because it is not part of any token
         Token * next_token = processCharacter('\n');
         if(next_token != NULL)
         {
@@ -112,21 +58,35 @@ GArray * ScanFile(char * filePath)
     return token_stream;
 }
 
-
+/**
+ * This is the meat of the scanner, it processes characters one at a time to build tokens for the language as specified
+ * in the DFA
+ * @param c The character we are currently reading in from the input file.
+ * @return A new Token if the current character terminates the PREVIOUS token, ie input = 3.1415-, the `-` character
+ * would cause a Number token to be returned with the content of 3.1415. The next character would of course return a
+ * token with the '-'. If a token has not been terminated a NULL ptr will be returned.
+ * @warning Will exit with a code of -1 if a scanning error occurs.
+ */
 Token * processCharacter(char c)
 {
+    // Static buffer that stores our current token as we build it character by character
     static char * token_buff;
+    // Static value tracking length of our current token
     static unsigned int token_length = 0;
+    // Static value that tracks the current line number of the program, for debugging scanning errors
     static unsigned int line_number = 1;
+    // Static value that tracks the current column number of the program, for debugging scanning errors
     static unsigned int col_number = 1;
     Token * ret_val = NULL;
 
     if(current_state != q0 && current_state != qERR)
     {
+        // If we are in here it means that we are actively working on a token
+
         scannerState next_state = state_LUT[current_state][c];
         if(next_state != q0 && next_state != qERR)
         {
-            // Same state, append our data
+            // If we are in here, the current character does NOT terminate our current token, so append it and move on
             // TODO This isn't the best allocation scheme, maybe revisit this
             token_buff = realloc(token_buff, token_length + 1);
             token_buff[token_length] = c;
@@ -158,10 +118,11 @@ Token * processCharacter(char c)
 
     if(current_state == q0)
     {
-        // Check next state to make sure we have a good character.
+        // If we are here it means we are ready to start a new token, check the next state to make sure it is valid
         scannerState next_state = state_LUT[current_state][c];
         if(next_state != q0 && next_state != qERR)
         {
+            // Time to start a new token
             token_buff = malloc(sizeof(char) * 1);
             token_length = 0;
             token_buff[token_length] = c;

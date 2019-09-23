@@ -9,32 +9,11 @@
 #include <stdio.h>
 #include <stdint.h>
 
-
-typedef enum tokenType
-{
-    INVALID = 0,
-    plus,
-    minus,
-    multiply,
-    divide,
-    power,
-    end_paren,
-    start_paren,
-    end_stmt,
-    assign,
-    number,
-    id_or_keyword,
-    string,
-}tokenType;
-
-typedef struct Token{
-    tokenType type;
-    unsigned int line_num;
-    unsigned int col_num;
-    char * data;
-    unsigned int size;
-}Token;
-
+/**
+ * This function scans a Jott file and generates a token stream.
+ * @param filePath The path to the file to tokenize
+ * @return A pointer to a new GArray of Token structs
+ */
 GArray * ScanFile(char * filePath);
 
 #endif //JOTT_INTERPRETTER_SCANNER_H
