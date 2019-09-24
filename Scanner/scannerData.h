@@ -66,24 +66,24 @@ scannerState state_LUT[18][256] = {
  * Index is current scanner state
  */
 tokenType tokenType_LUT[18] = {
-        /*qERR*/ INVALID,
-        /*q0  */ INVALID,
-        /*q1  */ id_or_keyword,
-        /*q2  */ INVALID,
-        /*q3  */ number,
-        /*q4  */ number,
-        /*q5  */ assign,
-        /*q6  */ start_paren,
-        /*q7  */ end_paren,
-        /*q8  */ end_stmt,
-        /*q9  */ plus,
-        /*q10 */ minus,
-        /*q11 */ multiply,
-        /*q12 */ divide,
-        /*q13 */ power,
-        /*q14 */ INVALID,
-        /*q15 */ string,
-        /*q16 */ comma
+        /*qERR*/ t_INVALID,
+        /*q0  */ t_INVALID,
+        /*q1  */ t_id_or_keyword,
+        /*q2  */ t_INVALID,
+        /*q3  */ t_number,
+        /*q4  */ t_number,
+        /*q5  */ t_assign,
+        /*q6  */ t_start_paren,
+        /*q7  */ t_end_paren,
+        /*q8  */ t_end_stmt,
+        /*q9  */ t_plus,
+        /*q10 */ t_minus,
+        /*q11 */ t_multiply,
+        /*q12 */ t_divide,
+        /*q13 */ t_power,
+        /*q14 */ t_INVALID,
+        /*q15 */ t_string,
+        /*q16 */ t_comma
 };
 
 

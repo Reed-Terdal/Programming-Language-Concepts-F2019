@@ -91,7 +91,7 @@ Token * processCharacter(char c)
             token_buff[token_length] = c;
             token_length++;
         }
-        else if(next_state == q0 && tokenType_LUT[current_state] != INVALID)
+        else if(next_state == q0 && tokenType_LUT[current_state] != t_INVALID)
         {
             // We have accepted a token, announce it and reset
             Token * new_token = malloc(sizeof(Token));

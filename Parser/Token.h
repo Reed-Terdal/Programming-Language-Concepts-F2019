@@ -13,20 +13,20 @@ static const char * tokenTypeStrings[] ={"INVALID","plus","minus","multiply","di
  */
 typedef enum tokenType
 {
-    INVALID = 0,
-    plus,
-    minus,
-    multiply,
-    divide,
-    power,
-    end_paren,
-    start_paren,
-    end_stmt,
-    assign,
-    number,
-    id_or_keyword,
-    string,
-    comma,
+    t_INVALID = 0,
+    t_plus,
+    t_minus,
+    t_multiply,
+    t_divide,
+    t_power,
+    t_end_paren,
+    t_start_paren,
+    t_end_stmt,
+    t_assign,
+    t_number,
+    t_id_or_keyword,
+    t_string,
+    t_comma,
 }tokenType;
 
 /**

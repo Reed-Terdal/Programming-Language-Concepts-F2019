@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "scanner.h"
+#include "parser.h"
 #include <gmodule.h>
 
 #include <time.h>
@@ -23,6 +24,10 @@ int main(int argc, char ** argv)
     GArray * tokenStream = ScanFile(argv[1]);
     long double totalTime = ((long double)clock() / CLOCKS_PER_SEC) - startTime;
     printf("Time to scan: %Lfus\n", (totalTime * 1000) * 1000);
+    totalTime = (long double)clock() / CLOCKS_PER_SEC;
+//    GNode * parseTree = ParseTokenStream(tokenStream);
+    totalTime = ((long double)clock() / CLOCKS_PER_SEC) - totalTime;
+    printf("Time to parse: %Lfus\n", (totalTime * 1000) * 1000);
 
 //    printTokens(tokenStream);
     for(unsigned int i = 0; i < tokenStream->len; i++)

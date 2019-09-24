@@ -3,10 +3,28 @@
 //
 
 #include "parser.h"
-
-
+#include "parserData.h"
+#include "Token.h"
 
 GNode * ParseTokenStream(GArray * tokenStream)
 {
+    Token token;
+    Node * tos;
+    GNode * root = g_node_new(NULL);
 
+    for(;;)
+    {
+        token = g_array_index(tokenStream, Token, 0);
+        tos = g_queue_pop_head(&parseStack);
+
+        ScannerAction action = parseLUT[token.type][tos->type];
+
+        if(action.accepting)
+        {
+            break;
+        }
+    }
+
+
+    return root;
 }

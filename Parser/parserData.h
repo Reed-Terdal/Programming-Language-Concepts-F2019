@@ -9,29 +9,29 @@
 
 typedef enum NodeType
 {
-    INVALID,
-    stmt_list,
-    start_paren,
-    end_paren,
-    end_stmt,
-    j_char,
-    jl_char,
-    ju_char,
-    digit,
-    sign,
-    id,
-    stmt,
-    j_expr,
-    print,
-    asmt,
-    op,
-    dbl,
-    d_expr,
-    j_int,
-    i_expr,
-    str_literal,
-    str,
-    s_expr
+    n_INVALID,
+    n_stmt_list,
+    n_start_paren,
+    n_end_paren,
+    n_end_stmt,
+    n_char,
+    n_l_char,
+    n_u_char,
+    n_digit,
+    n_sign,
+    n_id,
+    n_stmt,
+    n_expr,
+    n_print,
+    n_asmt,
+    n_op,
+    n_dbl,
+    n_d_expr,
+    n_int,
+    n_i_expr,
+    n_str_literal,
+    n_str,
+    n_s_expr
 }NodeType;
 
 typedef struct Node
@@ -41,8 +41,6 @@ typedef struct Node
     void * data;
 } Node;
 
-
-
 typedef struct ScannerAction
 {
     unsigned int Shift;
@@ -51,5 +49,10 @@ typedef struct ScannerAction
     unsigned int NextState;
     bool accepting;
 }ScannerAction;
+
+// TODO FILL THIS IN!!!!
+static ScannerAction parseLUT[15][15] = {};
+
+static GQueue parseStack = {NULL, NULL, 0};
 
 #endif //JOTT_INTERPRETTER_PARSERDATA_H
