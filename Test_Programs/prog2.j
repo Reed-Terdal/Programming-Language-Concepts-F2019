@@ -1,10 +1,13 @@
 Integer x = 5;
+// This is a comment
 Double y = 3.1;
 String z = "foobar";
 String a = concat( z, "123" );
+// This is a comment
 print( x );
 print( y );
 print( x + 3 );
+// This is a comment
 print( y + 0.21 );
 print( z );
 print( concat( a, "456" ) );

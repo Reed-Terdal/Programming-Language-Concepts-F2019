@@ -30,6 +30,7 @@ typedef enum scannerState
     q14, // start quote
     q15, // end quote
     q16, // comma
+    q17, // COMMENT
 } scannerState;
 
 scannerState current_state;
@@ -40,7 +41,7 @@ scannerState current_state;
  * The first index is the current scanner state and the second index is the current character being processed.
  * If transitioning from !q0 -> q0 we accept the token. qERR is a bad state if we get incorrect input.
  */
-scannerState state_LUT[18][256] = {
+scannerState state_LUT[19][256] = {
         /* qERR*/ {},//Default initialized, qERR only leads to qERR
         /* q0  */ {['A'...'Z']=q1, ['a'...'z']=q1, ['.']=q2, ['0'...'9']=q3, ['=']=q5, ['(']=q6, [')']=q7, [';']=q8, ['+']=q9, ['-']=q10, ['*']=q11, ['/']=q12, ['^']=q13, ['"']=q14, [',']=q16, ['\r']=q0, ['\n']=q0, [' ']=q0, ['\t']=q0},
         /* q1  */ {['A'...'Z']=q1, ['a'...'z']=q1,['0'...'9']=q1,   [0 ... '/']=q0, [':'...'@']=q0, ['['...'`']=q0, ['{'...255]=q0},
@@ -54,18 +55,19 @@ scannerState state_LUT[18][256] = {
         /* q9  */ {FINAL_ACCEPT_STATE},
         /* q10 */ {FINAL_ACCEPT_STATE},
         /* q11 */ {FINAL_ACCEPT_STATE},
-        /* q12 */ {FINAL_ACCEPT_STATE},
+        /* q12 */ {['/'] = q17,                                     [0 ...'.']=q0, ['0'...255]=q0},
         /* q13 */ {FINAL_ACCEPT_STATE},
         /* q14 */ {['A'...'Z']=q14, ['a'...'z']=q14, ['0'...'9']=q14, [' ']=q14, ['"']=q15},
         /* q15 */ {FINAL_ACCEPT_STATE},
-        /* q16 */ {FINAL_ACCEPT_STATE}
+        /* q16 */ {FINAL_ACCEPT_STATE},
+        /* q17 */ {[0 ... 9]=q17, [11 ... 255]=q17,                 ['\n']=q0}
 };
 
 /**
  * This Look-Up-Table represents what token is being built based on the current scanner state.
  * Index is current scanner state
  */
-tokenType tokenType_LUT[18] = {
+tokenType tokenType_LUT[19] = {
         /*qERR*/ t_INVALID,
         /*q0  */ t_INVALID,
         /*q1  */ t_id_or_keyword,
@@ -83,7 +85,8 @@ tokenType tokenType_LUT[18] = {
         /*q13 */ t_power,
         /*q14 */ t_INVALID,
         /*q15 */ t_string,
-        /*q16 */ t_comma
+        /*q16 */ t_comma,
+        /*q17 */ t_INVALID
 };
 
 

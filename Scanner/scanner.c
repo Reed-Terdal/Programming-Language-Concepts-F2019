@@ -54,6 +54,7 @@ GArray * ScanFile(char * filePath)
     }
 
 
+    fclose(source);
     return token_stream;
 }
 
@@ -81,9 +82,19 @@ Token * processCharacter(char c)
     if(current_state != q0 && current_state != qERR)
     {
         // If we are in here it means that we are actively working on a token
-
         scannerState next_state = state_LUT[current_state][c];
-        if(next_state != q0 && next_state != qERR)
+        if(current_state == q17 && next_state == q17)
+        {
+            // We are processing a comment, don't buffer it
+            if (token_length > 0)
+            {
+                // We buffered the first '/', get rid of it
+                free(token_buff);
+                token_buff = NULL;
+                token_length = 0;
+            }
+        }
+        else if(next_state != q0 && next_state != qERR)
         {
             // If we are in here, the current character does NOT terminate our current token, so append it and move on
             // TODO This isn't the best allocation scheme, maybe revisit this
@@ -106,7 +117,7 @@ Token * processCharacter(char c)
             token_buff = NULL;
             token_length = 0;
         }
-        else
+        else if(current_state != q17)
         {
             // Something screwed up, time to throw a fit
             fprintf(stderr, "Scanner Error:\nOn line:%d, column:%d\nCurrent state:%d, Current character:%c", line_number, col_number, current_state, c);

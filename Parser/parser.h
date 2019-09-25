@@ -9,7 +9,6 @@
 
 #include <gmodule.h>
 #include <stdbool.h>
-#include "parserData.h"
 
 
 

@@ -12,6 +12,8 @@ GNode * ParseTokenStream(GArray * tokenStream)
     Node * tos;
     GNode * root = g_node_new(NULL);
 
+    g_queue_push_head(&parseStack, &g_array_index(tokenStream, Token, 0));
+
     for(;;)
     {
         token = g_array_index(tokenStream, Token, 0);
