@@ -1,2 +1,3 @@
-Integer .x = 5;
+Integer x = 5;
+
 print( x / 0 );

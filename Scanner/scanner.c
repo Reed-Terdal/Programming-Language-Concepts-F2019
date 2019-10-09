@@ -6,9 +6,11 @@
 #include "scannerData.h"
 #include <errno.h>
 #include <stdlib.h>
+#include "keyword_lookup.h"
 
 
 Token * processCharacter(char c);
+tokenType findTokenType(GString *);
 
 GArray * ScanFile(char * filePath)
 {
@@ -39,7 +41,7 @@ GArray * ScanFile(char * filePath)
     {
         // If we are in here it means that we are still processing a token, we need to send in a character to flush it
         // out, a newline will work because it is not part of any token
-        Token * next_token = processCharacter('\n');
+        Token * next_token = processCharacter('\0');
         if(next_token != NULL)
         {
             g_array_append_val(token_stream, *next_token);
@@ -52,7 +54,6 @@ GArray * ScanFile(char * filePath)
         fprintf(stderr, "Scanner Error:\nUnexpected EOF");
         exit(-1);
     }
-
 
     fclose(source);
     return token_stream;
@@ -70,9 +71,8 @@ GArray * ScanFile(char * filePath)
 Token * processCharacter(char c)
 {
     // Static buffer that stores our current token as we build it character by character
-    static char * token_buff;
+    static GString * token_buff = NULL;
     // Static value tracking length of our current token
-    static unsigned int token_length = 0;
     // Static value that tracks the current line number of the program, for debugging scanning errors
     static unsigned int line_number = 1;
     // Static value that tracks the current column number of the program, for debugging scanning errors
@@ -86,36 +86,29 @@ Token * processCharacter(char c)
         if(current_state == q17 && next_state == q17)
         {
             // We are processing a comment, don't buffer it
-            if (token_length > 0)
+            if (token_buff->len > 0)
             {
                 // We buffered the first '/', get rid of it
-                free(token_buff);
-                token_buff = NULL;
-                token_length = 0;
+                g_string_set_size(token_buff, 0);
             }
         }
         else if(next_state != q0 && next_state != qERR)
         {
             // If we are in here, the current character does NOT terminate our current token, so append it and move on
-            // TODO This isn't the best allocation scheme, maybe revisit this
-            token_buff = realloc(token_buff, token_length + 1);
-            token_buff[token_length] = c;
-            token_length++;
+            g_string_append_c(token_buff, c);
         }
         else if(next_state == q0 && tokenType_LUT[current_state] != t_INVALID)
         {
             // We have accepted a token, announce it and reset
             Token * new_token = malloc(sizeof(Token));
-            new_token->data = token_buff;
-            new_token->size = token_length;
-            new_token->type = tokenType_LUT[current_state];
+            new_token->data = g_string_new(token_buff->str);
+            new_token->type = findTokenType(new_token->data);
             new_token->line_num = line_number;
             new_token->col_num = col_number;
             ret_val = new_token;
             // Resetting
             current_state = q0;
-            token_buff = NULL;
-            token_length = 0;
+            g_string_set_size(token_buff, 0);
         }
         else if(current_state != q17)
         {
@@ -128,22 +121,34 @@ Token * processCharacter(char c)
 
     if(current_state == q0)
     {
-        // If we are here it means we are ready to start a new token, check the next state to make sure it is valid
-        scannerState next_state = state_LUT[current_state][c];
-        if(next_state != q0 && next_state != qERR)
+        if(c == '\0')
         {
-            // Time to start a new token
-            token_buff = malloc(sizeof(char) * 1);
-            token_length = 0;
-            token_buff[token_length] = c;
-            token_length++;
+            // We are flushing any remaining tokens, free the allocated space.
+            g_string_free(token_buff, TRUE);
+            token_buff = NULL;
         }
-        else if(next_state == qERR)
+        else
         {
-            // Something screwed up, time to throw a fit
-            fprintf(stderr, "Scanner Error:\nOn line:%d, column:%d\nCurrent state:%d, Current character:%c", line_number, col_number, current_state, c);            exit(-1);
+            scannerState next_state = state_LUT[current_state][c];
+            // If we are here it means we are ready to start a new token, check the next state to make sure it is valid
+            if(next_state != q0 && next_state != qERR)
+            {
+                if(token_buff == NULL)
+                {
+                    token_buff = g_string_new(NULL);
+                }
+                g_string_set_size(token_buff, 0);
+                // Time to start a new token
+                g_string_append_c(token_buff, c);
+            }
+            else if(next_state == qERR)
+            {
+                // Something screwed up, time to throw a fit
+                fprintf(stderr, "Scanner Error:\nOn line:%d, column:%d\nCurrent state:%d, Current character:%c", line_number, col_number, current_state, c);
+                exit(-1);
+            }
+            current_state = next_state;
         }
-        current_state = next_state;
     }
 
     // Advance our static tracking vars
@@ -158,4 +163,16 @@ Token * processCharacter(char c)
     }
 
     return ret_val;
+}
+
+
+tokenType findTokenType(GString * buff)
+{
+    tokenType retVal = tokenType_LUT[current_state];
+    struct keyword_lookup * lookup;
+    if(current_state == q1 && (lookup = in_word_set(buff->str, buff->len)) != NULL)
+    {
+        retVal = lookup->type;
+    }
+    return retVal;
 }

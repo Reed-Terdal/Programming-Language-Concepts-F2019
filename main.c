@@ -1,16 +1,14 @@
 #include <stdio.h>
-#include <stdlib.h>
+#include <glib.h>
+#include "Token.h"
 #include "scanner.h"
 #include "parser.h"
-#include <gmodule.h>
-
-#include <time.h>
-#include "Token.h"
+#include <errno.h>
 
 void printUsage();
-void printToken(Token *);
-void printTokens(GArray * tokenStream);
-
+void printTokens(GArray *);
+void cleanup(GArray * tokens, program * tree, GTimer * timer, GString *);
+void dumpDebug(GArray *, program *);
 
 int main(int argc, char ** argv)
 {
@@ -20,56 +18,101 @@ int main(int argc, char ** argv)
         printUsage();
         return -1;
     }
-    long double startTime = (long double)clock() / CLOCKS_PER_SEC;
+    printf("\n\nFile name: %s\n", argv[1]);
+    GTimer * benchTimer = g_timer_new();
     GArray * tokenStream = ScanFile(argv[1]);
-    long double totalTime = ((long double)clock() / CLOCKS_PER_SEC) - startTime;
-    printf("Time to scan: %Lfus\n", (totalTime * 1000) * 1000);
-    totalTime = (long double)clock() / CLOCKS_PER_SEC;
-//    GNode * parseTree = ParseTokenStream(tokenStream);
-    totalTime = ((long double)clock() / CLOCKS_PER_SEC) - totalTime;
-    printf("Time to parse: %Lfus\n", (totalTime * 1000) * 1000);
+    g_timer_stop(benchTimer);
+    printf("Time to scan: %.2fus\n", g_timer_elapsed(benchTimer, NULL) * 1000 * 1000);
+    g_timer_start(benchTimer);
+    program * parseTree = ParseTokenStream(tokenStream);
+    g_timer_stop(benchTimer);
+    printf("Time to parse: %.2fus\n", g_timer_elapsed(benchTimer, NULL) * 1000 * 1000);
+
+    g_timer_start(benchTimer);
+    dumpDebug(tokenStream, parseTree);
+    g_timer_stop(benchTimer);
+    printf("Time to dump: %.2fus\n", g_timer_elapsed(benchTimer, NULL) * 1000 * 1000);
 
 //    printTokens(tokenStream);
-    for(unsigned int i = 0; i < tokenStream->len; i++)
-    {
-        printf("==================%d==============\n", i);
-        Token * cur_token = &g_array_index(tokenStream, Token, i);
-        printToken(cur_token);
-        printf("\n==================%d==============\n", i);
-        free(cur_token->data);
-    }
 
-    g_array_free(tokenStream, TRUE);
-
-
-
+    cleanup(tokenStream, parseTree, benchTimer, NULL);
     return 0;
 }
-
-
 
 void printUsage()
 {
     printf("Usage: ./jot <path-to-jott-program>");
 }
 
-void printToken(Token * token)
+void printTokens(GArray * tokens)
 {
-    if(token != NULL)
+    for(unsigned int i = 0; i < tokens->len; i++)
     {
-        printf("Type: %s\nLocation: Line=%d, Col=%d\nData: \"%.*s\"", tokenTypeStrings[token->type], token->line_num, token->col_num, token->size, token->data);
-    } else
+        printf("==================%d==============\n", i);
+        Token * token = &g_array_index(tokens, Token, i);
+        if(token != NULL)
+        {
+            printf("Type: %s\nLocation: Line=%d, Col=%d\nData: \"%s\"", tokenTypeStrings[token->type], token->line_num, token->col_num, token->data->str);
+        }
+        else
+        {
+            printf("NULL TOKEN, FREAK OUT");
+        }
+        printf("\n==================%d==============\n", i);
+    }
+
+}
+
+void cleanup(GArray * tokens, program * tree, GTimer * timer, GString * json)
+{
+    if(json != NULL)
     {
-        printf("NULL TOKEN, FREAK OUT");
+        g_string_free(json, TRUE);
+    }
+    if(tree != NULL)
+    {
+        destroy_program(tree);
+    }
+    if(timer != NULL)
+    {
+        g_timer_destroy(timer);
+    }
+    if(tokens != NULL)
+    {
+        for(unsigned int i = 0; i < tokens->len; i++)
+        {
+            g_string_free(g_array_index(tokens, Token, i).data, TRUE);
+        }
+        g_array_free(tokens, TRUE);
     }
 }
 
-void printTokens(GArray * tokenStream)
+void dumpDebug(GArray * tokenStream, program * prog)
 {
+    FILE * out = fopen("./dump.json", "w");
+    if( out == NULL)
+    {
+        printf("Debug dump failed with Error Num: %d\n", errno);
+        return;
+    }
+    GString * json = g_string_new(NULL);
+    g_string_append(json, "{ \"Tokens\": [");
     for(unsigned int i = 0; i < tokenStream->len; i++)
     {
-        Token * cur_token = &g_array_index(tokenStream, Token, i);
-        printf("%.*s", cur_token->size, cur_token->data);
-        free(cur_token->data);
+        GString * child = token_to_json(&g_array_index(tokenStream, Token, i));
+        g_string_append(json, child->str);
+        g_string_free(child, TRUE);
+        g_string_append(json, ", ");
     }
+    g_string_truncate(json, json->len - 2 ); // removes the last ','
+    g_string_append(json, "], \"Parse_Tree\": {\"Program\": ");
+    GString * child = prog_to_json(prog);
+    g_string_append(json, child->str);
+    g_string_free(child, TRUE);
+    g_string_append(json, "}}");
+
+    fputs(json->str, out);
+    fflush(out);
+    fclose(out);
+    g_string_free(json, TRUE);
 }

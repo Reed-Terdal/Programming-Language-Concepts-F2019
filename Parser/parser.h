@@ -9,8 +9,8 @@
 
 #include <gmodule.h>
 #include <stdbool.h>
+#include "program.h"
 
 
 
-
-GNode * ParseTokenStream(GArray * tokenStream);
+program * ParseTokenStream(GArray * tokenStream);

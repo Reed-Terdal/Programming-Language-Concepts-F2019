@@ -1,0 +1,9 @@
+%{
+#include Token.h
+%}
+
+struct keyword_lookup {char *name; int type};
+%%
+Double, t_type_double
+Integer, t_type_integer
+String, t_type_string

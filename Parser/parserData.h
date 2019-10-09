@@ -10,6 +10,7 @@
 typedef enum NodeType
 {
     n_INVALID,
+    n_program,
     n_stmt_list,
     n_start_paren,
     n_end_paren,

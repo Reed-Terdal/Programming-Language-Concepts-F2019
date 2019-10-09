@@ -70,10 +70,10 @@ scannerState state_LUT[19][256] = {
 tokenType tokenType_LUT[19] = {
         /*qERR*/ t_INVALID,
         /*q0  */ t_INVALID,
-        /*q1  */ t_id_or_keyword,
+        /*q1  */ t_id,
         /*q2  */ t_INVALID,
-        /*q3  */ t_number,
-        /*q4  */ t_number,
+        /*q3  */ t_integer,
+        /*q4  */ t_floating,
         /*q5  */ t_assign,
         /*q6  */ t_start_paren,
         /*q7  */ t_end_paren,

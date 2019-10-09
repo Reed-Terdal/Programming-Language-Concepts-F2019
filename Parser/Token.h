@@ -5,7 +5,9 @@
 #ifndef JOTT_INTERPRETTER_TOKEN_H
 #define JOTT_INTERPRETTER_TOKEN_H
 
-static const char * tokenTypeStrings[] ={"INVALID","plus","minus","multiply","divide","power","end_paren","start_paren","end_stmt","assign","number","id_or_keyword","string","comma"};
+#include <glib.h>
+
+static const char * tokenTypeStrings[] ={"INVALID", "plus", "minus", "multiply", "divide", "power", "end_paren", "start_paren", "end_stmt", "assign", "integer", "float", "id", "string", "comma", "Double Type", "Int Type", "String Type"};
 
 
 /**
@@ -23,10 +25,14 @@ typedef enum tokenType
     t_start_paren,
     t_end_stmt,
     t_assign,
-    t_number,
-    t_id_or_keyword,
+    t_integer,
+    t_floating,
+    t_id,
     t_string,
     t_comma,
+    t_type_double,
+    t_type_integer,
+    t_type_string
 }tokenType;
 
 /**
@@ -36,8 +42,9 @@ typedef struct Token{
     tokenType type;
     unsigned int line_num;
     unsigned int col_num;
-    char * data;
-    unsigned int size;
+    GString * data;
 }Token;
+
+GString * token_to_json(Token * token);
 
 #endif //JOTT_INTERPRETTER_TOKEN_H
