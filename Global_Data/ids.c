@@ -112,7 +112,6 @@ void destroyGlobalScope()
         g_hash_table_iter_init(&iter, global_scope);
         while (g_hash_table_iter_next (&iter, &key, &value))
         {
-            free(key);
             if(((runtime_variable *)value)->value != NULL)
             {
                 if(((runtime_variable *)value)->type == jstring)

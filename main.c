@@ -7,9 +7,8 @@
 #include <errno.h>
 
 void printUsage();
-void printTokens(GArray *);
 void cleanup(GArray * tokens, program * tree, GTimer * timer, GString *);
-void dumpDebug(GArray *, program *);
+void dumpDebug(GArray *, program *, GString *);
 
 int main(int argc, char ** argv)
 {
@@ -19,64 +18,50 @@ int main(int argc, char ** argv)
         printUsage();
         return -1;
     }
-    printf("\n\nFile name: %s\n", argv[1]);
+
+    GString * metadata = g_string_new(NULL);
+    g_string_printf(metadata,"{ \"File_Name\": \"%s\", ", argv[1]);
 
     /// Scanning/Tokenizing
     GTimer * benchTimer = g_timer_new();
     GArray * tokenStream = ScanFile(argv[1]);
     g_timer_stop(benchTimer);
-    printf("Time to scan: %.2fus\n", g_timer_elapsed(benchTimer, NULL) * 1000 * 1000);
+    g_string_append_printf(metadata, "\"Scan Time(us)\": %.2f, ", g_timer_elapsed(benchTimer, NULL) * 1000 * 1000);
 
 
     /// Parsing
     g_timer_start(benchTimer);
     program * parseTree = ParseTokenStream(tokenStream);
     g_timer_stop(benchTimer);
-    printf("Time to parse: %.2fus\n", g_timer_elapsed(benchTimer, NULL) * 1000 * 1000);
+    g_string_append_printf(metadata, "\"Parse Time(us)\": %.2f, ", g_timer_elapsed(benchTimer, NULL) * 1000 * 1000);
 
 
     /// Execution
     g_timer_start(benchTimer);
     execute(parseTree);
     g_timer_stop(benchTimer);
-    printf("Time to execute: %.2fus\n", g_timer_elapsed(benchTimer, NULL) * 1000 * 1000);
+    g_string_append_printf(metadata, "\"Run Time(us)\": %.2f, ", g_timer_elapsed(benchTimer, NULL) * 1000 * 1000);
 
 
-    /// Debug Information
-    g_timer_start(benchTimer);
-    dumpDebug(tokenStream, parseTree);
-    g_timer_stop(benchTimer);
-    printf("Time to dump: %.2fus\n", g_timer_elapsed(benchTimer, NULL) * 1000 * 1000);
+    g_string_append_printf(metadata, "\"Token Count\": %u}", tokenStream->len);
+
+    if(argc >= 3 && strcmp(argv[2], "-d") == 0)
+    {
+        /// Debug Information
+        printf("Writing dumping debug info...\n");
+        dumpDebug(tokenStream, parseTree, metadata);
+    }
+    g_string_free(metadata, TRUE);
 
 
     /// Clean-up
     cleanup(tokenStream, parseTree, benchTimer, NULL);
-
     return 0;
 }
 
 void printUsage()
 {
     printf("Usage: ./jot <path-to-jott-program>");
-}
-
-void printTokens(GArray * tokens)
-{
-    for(unsigned int i = 0; i < tokens->len; i++)
-    {
-        printf("==================%d==============\n", i);
-        Token * token = &g_array_index(tokens, Token, i);
-        if(token != NULL)
-        {
-            printf("Type: %s\nLocation: Line=%d, Col=%d\nData: \"%s\"", tokenTypeStrings[token->type], token->line_num, token->col_num, token->data->str);
-        }
-        else
-        {
-            printf("NULL TOKEN, FREAK OUT");
-        }
-        printf("\n==================%d==============\n", i);
-    }
-
 }
 
 void cleanup(GArray * tokens, program * tree, GTimer * timer, GString * json)
@@ -103,7 +88,7 @@ void cleanup(GArray * tokens, program * tree, GTimer * timer, GString * json)
     }
 }
 
-void dumpDebug(GArray * tokenStream, program * prog)
+void dumpDebug(GArray * tokenStream, program * prog, GString * metadata)
 {
     FILE * out = fopen("./dump.json", "w");
     if( out == NULL)
@@ -112,7 +97,8 @@ void dumpDebug(GArray * tokenStream, program * prog)
         return;
     }
     GString * json = g_string_new(NULL);
-    g_string_append(json, "{ \"Tokens\": [");
+    g_string_printf(json, "{\"Metadata\": %s", metadata->str);
+    g_string_append(json, ", \"Tokens\": [");
     for(unsigned int i = 0; i < tokenStream->len; i++)
     {
         GString * child = token_to_json(&g_array_index(tokenStream, Token, i));

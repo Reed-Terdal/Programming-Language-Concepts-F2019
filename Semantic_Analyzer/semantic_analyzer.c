@@ -6,10 +6,16 @@
 #include <math.h>
 #include <stdio.h>
 
+typedef struct string_meta
+{
+    GString * data;
+    bool is_intermediate;
+}string_meta;
+
 void * evaluate_function(f_call * fCall);
 void * evaluate_expression(expr * expression);
 gdouble evaluate_double_expression(d_expr * dExpr);
-GString * evaluate_string_expression(s_expr * sExpr);
+string_meta * evaluate_string_expression(s_expr * sExpr);
 gint64 evaluate_int_expression(i_expr * iExpr);
 
 
@@ -25,35 +31,36 @@ void execute(program * parse_tree)
                 void * retval = evaluate_expression(current->statement->expression);
                 if(retval != NULL)
                 {
-                    if(current->statement->expression->string_expression != NULL)
+                    if(current->statement->expression->string_expression != NULL && ((string_meta *)retval)->is_intermediate)
                     {
-                        g_string_free(retval, TRUE);
+                        g_string_free(((string_meta *)retval)->data, TRUE);
                     }
-                    else
-                    {
-                        free(retval);
-                    }
+                    free(retval);
                 }
             }
             else if(current->statement->assignment != NULL)
             {
-                GString * id_copy = g_string_new(current->statement->assignment->id->id->str);
-                setGlobalVariable(id_copy, evaluate_expression(current->statement->assignment->expression));
+                void * retval = evaluate_expression(current->statement->assignment->expression);
+                if(current->statement->assignment->id->type == jstring)
+                {
+                    setGlobalVariable(current->statement->assignment->id->id, ((string_meta *)retval)->data);
+                    free(retval);
+                }
+                else
+                {
+                    setGlobalVariable(current->statement->assignment->id->id, retval);
+                }
             }
             else if(current->statement->function_call != NULL)
             {
                 void * retval = evaluate_function(current->statement->function_call);
                 if(retval != NULL)
                 {
-                    Type check;
-                    if(findIDType(current->statement->function_call->id->id, &check) && check == jf_str)
+                    if(current->statement->function_call->id->type == jf_str && ((string_meta *)retval)->is_intermediate)
                     {
-                        g_string_free(retval, TRUE);
+                        g_string_free(((string_meta *)retval)->data, TRUE);
                     }
-                    else
-                    {
-                        free(retval);
-                    }
+                    free(retval);
                 }
             }
         }
@@ -82,7 +89,13 @@ void * evaluate_function(f_call * fCall)
                     }
                     else if(fCall->params->expression->string_expression != NULL)
                     {
-                        printf("%s\n", evaluate_string_expression(fCall->params->expression->string_expression)->str);
+                        string_meta * result = evaluate_string_expression(fCall->params->expression->string_expression);
+                        printf("%s\n", result->data->str);
+                        if(result->is_intermediate)
+                        {
+                            g_string_free(result->data, TRUE);
+                        }
+                        free(result);
                     }
                 }
             }
@@ -93,10 +106,24 @@ void * evaluate_function(f_call * fCall)
                 fCall->params->next != NULL && fCall->params->next->expression != NULL &&
                 fCall->params->next->expression->string_expression != NULL)
                 {
-                    GString * first = g_string_new(evaluate_string_expression(fCall->params->expression->string_expression)->str);
-                    GString * second = evaluate_string_expression(fCall->params->next->expression->string_expression);
-                    g_string_append(first, second->str);
-                    g_string_free(second, TRUE);
+                    string_meta * first = evaluate_string_expression(fCall->params->expression->string_expression);
+                    string_meta * second = evaluate_string_expression(fCall->params->next->expression->string_expression);
+                    if(first->is_intermediate)
+                    {
+                        g_string_append(first->data, second->data->str);
+                    }
+                    else
+                    {
+                        GString * new = g_string_new(first->data->str);
+                        g_string_append(new, second->data->str);
+                        first->data = new;
+                    }
+                    first->is_intermediate = TRUE; // This was created from other strings, it does not correspond to a permanent location (yet)
+                    if(second->is_intermediate)
+                    {
+                        g_string_free(second->data, TRUE);
+                    }
+                    free(second);
                     return first;
                 }
             }
@@ -108,12 +135,20 @@ void * evaluate_function(f_call * fCall)
                    fCall->params->next->expression->int_expression != NULL)
                 {
                     gint64 index = evaluate_int_expression(fCall->params->next->expression->int_expression);
-                    GString * str = evaluate_string_expression(fCall->params->expression->string_expression);
-                    if(index < str->len)
+                    string_meta * str = evaluate_string_expression(fCall->params->expression->string_expression);
+                    if(index < str->data->len)
                     {
                         GString * new = g_string_new(NULL);
-                        g_string_append_c(new, str->str[index]);
-                        return new;
+                        g_string_append_c(new, str->data->str[index]);
+                        string_meta * final = calloc(1, sizeof(string_meta));
+                        final->data = new;
+                        final->is_intermediate = TRUE;  // This was created from other strings, it does not correspond to a permanent location (yet)
+                        if(str->is_intermediate)
+                        {
+                            g_string_free(str->data, TRUE);
+                        }
+                        free(str);
+                        return final;
                     }
                 }
             }
@@ -168,26 +203,31 @@ gint64 evaluate_int_expression(i_expr * iExpr)
     return 0;
 }
 
-GString * evaluate_string_expression(s_expr * sExpr)
+string_meta * evaluate_string_expression(s_expr * sExpr)
 {
     if(sExpr != NULL)
     {
         if(sExpr->literal != NULL)
         {
-            GString * copy = g_string_new(sExpr->literal->value->str);
-            return copy;
+            string_meta * final = calloc(1, sizeof(string_meta));
+            final->data = g_string_new(sExpr->literal->value->str);
+            final->is_intermediate = TRUE;
+            return final;
         }
         else if(sExpr->id != NULL)
         {
             runtime_variable * variable = getGlobalVariable(sExpr->id->id);
             if(variable != NULL && variable->value != NULL)
             {
-                return (GString *)variable->value;
+                string_meta * final = calloc(1, sizeof(string_meta));
+                final->data = (GString *)variable->value;
+                final->is_intermediate = FALSE;
+                return final;
             }
         }
         else if(sExpr->function_call != NULL)
         {
-            return (GString *)evaluate_function(sExpr->function_call);
+            return (string_meta *)evaluate_function(sExpr->function_call);
         }
     }
     return NULL;
