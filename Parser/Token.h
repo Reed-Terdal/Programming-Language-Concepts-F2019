@@ -9,6 +9,7 @@
 
 static const char * tokenTypeStrings[] ={"INVALID", "plus", "minus", "multiply", "divide", "power", "end_paren", "start_paren", "end_stmt", "assign", "integer", "float", "id", "string", "comma", "Double Type", "Int Type", "String Type"};
 
+char * __filePath;
 
 /**
  * Represents the types of tokens that are supported

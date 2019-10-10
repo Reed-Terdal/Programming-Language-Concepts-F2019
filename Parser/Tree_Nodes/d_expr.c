@@ -5,6 +5,7 @@
 #include <ids.h>
 #include <stdio.h>
 #include "d_expr.h"
+#include "Errors.h"
 
 d_expr * internal_d_expr_constructor(d_expr * parent, GArray * token_stream, unsigned long index, unsigned long * next);
 
@@ -51,22 +52,29 @@ d_expr * internal_d_expr_constructor(d_expr * parent, GArray * token_stream, uns
             }
             else if(curToken->type == t_id)
             {
-                if(findIDType(curToken->data, &check) && check == jdouble)
+                if(findIDType(curToken->data, &check))
                 {
-                    // We have an already declared double variable
-                    new_d_expr->LHS_expr->id = create_id_node(curToken);
+                    if(check == jdouble)
+                    {
+                        // We have an already declared double variable
+                        new_d_expr->LHS_expr->id = create_id_node(curToken);
+                    }
+                    else
+                    {
+                        // The ID is not an Double
+                        type_error(g_string_new("(Double Literal, Double Function)"), check, token_stream, curIndex);
+                    }
                 }
                 else
                 {
-                    // Its an ID, but it either hasn't been declared or is not an int
-                    fprintf(stderr, "Syntax Error: Tried to use a variable that has not been declared or is not an int");
-                    exit(-1);
+                    // Its an ID, but it either hasn't been declared
+                    undeclared_error(curToken->data, token_stream, curIndex);
                 }
             }
             else
             {
-                fprintf(stderr, "Syntax Error: Unexpected Token type in int expression");
-                exit(-1);
+                unexpected_token_error(g_string_new("(Double Literal, Double ID, Double Function)"), curToken->type,
+                                       token_stream, curIndex);
             }
             curIndex++;
             curToken = &g_array_index(token_stream, Token, curIndex);
@@ -100,8 +108,7 @@ d_expr * internal_d_expr_constructor(d_expr * parent, GArray * token_stream, uns
             break;
         default:
             // Next token is not an operation
-            fprintf(stderr, "Syntax Error: Expected an Double operator");
-            exit(-1);
+            unexpected_token_error(g_string_new("(+ - * / ^)"), curToken->type, token_stream, curIndex);
     }
     /// END OF OPERATOR
     /// START OF RHS
@@ -131,22 +138,29 @@ d_expr * internal_d_expr_constructor(d_expr * parent, GArray * token_stream, uns
             }
             else if (curToken->type == t_id)
             {
-                if (findIDType(curToken->data, &check) && check == jdouble)
+                if (findIDType(curToken->data, &check))
                 {
-                    // We have an already declared double variable
-                    new_d_expr->RHS_expr->id = create_id_node(curToken);
+                    if(check == jdouble)
+                    {
+                        // We have an already declared double variable
+                        new_d_expr->RHS_expr->id = create_id_node(curToken);
+                    }
+                    else
+                    {
+                        // The ID is not an Double
+                        type_error(g_string_new("(Double Literal, Double Function)"), check, token_stream, curIndex);
+                    }
                 }
                 else
                 {
-                    // Its an ID, but it either hasn't been declared or is not an double
-                    fprintf(stderr, "Syntax Error: Tried to use a variable that has not been declared or is not an int");
-                    exit(-1);
+                    // Its an ID, but it either hasn't been declared
+                    undeclared_error(curToken->data, token_stream, curIndex);
                 }
             }
             else
             {
-                fprintf(stderr, "Syntax Error: Unexpected Token type in double expression");
-                exit(-1);
+                unexpected_token_error(g_string_new("(Double Literal, Double ID, Double Function)"), curToken->type,
+                                       token_stream, curIndex);
             }
             curIndex++;
             curToken = &g_array_index(token_stream, Token, curIndex);
@@ -165,7 +179,6 @@ d_expr * internal_d_expr_constructor(d_expr * parent, GArray * token_stream, uns
     }
     /// END OF RHS
     return ret_val;
-
 }
 
 

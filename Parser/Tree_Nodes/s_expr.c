@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <ids.h>
 #include "s_expr.h"
+#include "Errors.h"
 
 s_expr * create_s_expr(GArray * token_stream, unsigned long index, unsigned long * next)
 {
@@ -39,19 +40,17 @@ s_expr * create_s_expr(GArray * token_stream, unsigned long index, unsigned long
                 }
                 else
                 {
-                    fprintf(stderr, "Syntax Error: non-string type variable/function in string expression");
-                    exit(-1);
+                    type_error(g_string_new("(String Literal, String Function)"),id_type, token_stream, index);
                 }
             }
             else
             {
-                fprintf(stderr, "Syntax Error: String expression includes undeclared variable/function");
-                exit(-1);
+                undeclared_error(curToken->data, token_stream, index);
             }
         }
             break;
         default:
-            fprintf(stderr, "Syntax Error: Unexpected token in string expression");
+            unexpected_token_error(g_string_new("(String Literal, String Function, String Variable)"), curToken->type, token_stream, index);
     }
 
     return new_s_expr;

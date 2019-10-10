@@ -35,6 +35,8 @@ typedef enum scannerState
 
 scannerState current_state;
 
+scannerState previous_state;
+
 #define FINAL_ACCEPT_STATE [0 ... 255]=q0
 /**
  * This Look-Up-Table represents the DFA for tokenizing a Jott program.

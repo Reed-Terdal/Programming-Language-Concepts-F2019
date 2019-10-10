@@ -6,6 +6,7 @@
 #include <ids.h>
 #include "p_list.h"
 #include "expr.h"
+#include "Errors.h"
 
 
 p_list * create_p_list(GArray * token_stream, unsigned long index, unsigned long * next)
@@ -37,24 +38,20 @@ p_list * create_p_list(GArray * token_stream, unsigned long index, unsigned long
                 else
                 {
                     // There was a trailing comma
-                    fprintf(stderr, "Syntax Error: Expected another parameter in function call");
-                    exit(-1);
+                    trailing_comma_error(token_stream, *next);
                 }
             }
             else if(curToken->type != t_end_paren)
             {
-                fprintf(stderr, "Syntax Error: Unexpected token in function parameter list");
-                exit(-1);
+                unexpected_token_error(g_string_new("( ',', Expression, ')' )"), curToken->type, token_stream, index);
             }
             break;
         case t_end_paren:
             // No tokens
             break;
         default:
-            fprintf(stderr, "Syntax Error: Unexpected token in function parameter list");
-            exit(-1);
+            unexpected_token_error(g_string_new("( ',', Expression, ')' )"), curToken->type, token_stream, index);
     }
-
     return new_p_list;
 }
 

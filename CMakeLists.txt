@@ -10,7 +10,7 @@ add_executable(Jott_Interpretter
         Scanner/scanner.c Scanner/scanner.h Scanner/scannerData.h Scanner/keyword_lookup.h
         Semantic_Analyzer/semantic_analyzer.c Semantic_Analyzer/semantic_analyzer.h
         Global_Data/ids.c Global_Data/ids.h
-        Parser/Tree_Nodes/Parse_Nodes/int_node.c Parser/Tree_Nodes/Parse_Nodes/int_node.h Parser/Tree_Nodes/Parse_Nodes/string_node.c Parser/Tree_Nodes/Parse_Nodes/string_node.h Parser/Tree_Nodes/Parse_Nodes/double_node.c Parser/Tree_Nodes/Parse_Nodes/double_node.h Parser/Tree_Nodes/Parse_Nodes/operator_node.c Parser/Tree_Nodes/Parse_Nodes/operator_node.h Parser/Tree_Nodes/Parse_Nodes/id_node.c Parser/Tree_Nodes/Parse_Nodes/id_node.h)
+        Parser/Tree_Nodes/Parse_Nodes/int_node.c Parser/Tree_Nodes/Parse_Nodes/int_node.h Parser/Tree_Nodes/Parse_Nodes/string_node.c Parser/Tree_Nodes/Parse_Nodes/string_node.h Parser/Tree_Nodes/Parse_Nodes/double_node.c Parser/Tree_Nodes/Parse_Nodes/double_node.h Parser/Tree_Nodes/Parse_Nodes/operator_node.c Parser/Tree_Nodes/Parse_Nodes/operator_node.h Parser/Tree_Nodes/Parse_Nodes/id_node.c Parser/Tree_Nodes/Parse_Nodes/id_node.h Global_Data/Errors.c Global_Data/Errors.h)
 
 target_include_directories(Jott_Interpretter PRIVATE
         /usr/include/glib-2.0

@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include "i_expr.h"
 #include "ids.h"
+#include "Errors.h"
 
 i_expr * internal_i_expr_constructor(i_expr * parent, GArray * token_stream, unsigned long index, unsigned long * next);
 
@@ -51,22 +52,29 @@ i_expr * internal_i_expr_constructor(i_expr * parent, GArray * token_stream, uns
             }
             else if(curToken->type == t_id)
             {
-                if(findIDType(curToken->data, &check) && check == jint)
+                if(findIDType(curToken->data, &check))
                 {
-                    // We have an already declared int variable
-                    new_i_expr->LHS_expr->id = create_id_node(curToken);
+                    if( check == jint)
+                    {
+                        // We have an already declared int variable
+                        new_i_expr->LHS_expr->id = create_id_node(curToken);
+                    }
+                    else
+                    {
+                        // The ID is not an int
+                        type_error(g_string_new("(Integer Literal, Integer Function)"), check, token_stream, curIndex);
+                    }
                 }
                 else
                 {
-                    // Its an ID, but it either hasn't been declared or is not an int
-                    fprintf(stderr, "Syntax Error: Tried to use a variable that has not been declared or is not an int");
-                    exit(-1);
+                    // Its an ID, but it hasn't been declared
+                    undeclared_error(curToken->data, token_stream, index);
                 }
             }
             else
             {
-                fprintf(stderr, "Syntax Error: Unexpected Token type in int expression");
-                exit(-1);
+                unexpected_token_error(g_string_new("(Integer Literal, Integer ID, Integer Function)"), curToken->type,
+                                       token_stream, curIndex);
             }
             curIndex++;
             curToken = &g_array_index(token_stream, Token, curIndex);
@@ -100,8 +108,7 @@ i_expr * internal_i_expr_constructor(i_expr * parent, GArray * token_stream, uns
             break;
         default:
             // Next token is not an operation
-            fprintf(stderr, "Syntax Error: Expected an integer operator");
-            exit(-1);
+            unexpected_token_error(g_string_new("(+ - * / ^)"), curToken->type, token_stream, curIndex);
     }
     /// END OF OPERATOR
     /// START OF RHS
@@ -131,22 +138,29 @@ i_expr * internal_i_expr_constructor(i_expr * parent, GArray * token_stream, uns
             }
             else if (curToken->type == t_id)
             {
-                if (findIDType(curToken->data, &check) && check == jint)
+                if (findIDType(curToken->data, &check))
                 {
-                    // We have an already declared int variable
-                    new_i_expr->RHS_expr->id = create_id_node(curToken);
+                    if(check == jint)
+                    {
+                        // We have an already declared int variable
+                        new_i_expr->RHS_expr->id = create_id_node(curToken);
+                    }
+                    else
+                    {
+                        // Its an ID, but it is not an int
+                        type_error(g_string_new("(Integer Literal, Integer Function)"), check, token_stream, curIndex);
+                    }
                 }
                 else
                 {
-                    // Its an ID, but it either hasn't been declared or is not an int
-                    fprintf(stderr, "Syntax Error: Tried to use a variable that has not been declared or is not an int");
-                    exit(-1);
+                    // Its an ID, but it hasn't been declared
+                    undeclared_error(curToken->data, token_stream, index);
                 }
             }
             else
             {
-                fprintf(stderr, "Syntax Error: Unexpected Token type in int expression");
-                exit(-1);
+                unexpected_token_error(g_string_new("(Integer Literal, Integer ID, Integer Function)"), curToken->type,
+                                       token_stream, curIndex);
             }
             curIndex++;
             curToken = &g_array_index(token_stream, Token, curIndex);

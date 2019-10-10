@@ -5,6 +5,7 @@
 #include "semantic_analyzer.h"
 #include <math.h>
 #include <stdio.h>
+#include <Errors.h>
 
 typedef struct string_meta
 {
@@ -85,7 +86,7 @@ void * evaluate_function(f_call * fCall)
                     }
                     else if(fCall->params->expression->double_expression != NULL)
                     {
-                        printf("%1.1f\n", evaluate_double_expression(fCall->params->expression->double_expression));
+                        printf("%1.9g\n", evaluate_double_expression(fCall->params->expression->double_expression));
                     }
                     else if(fCall->params->expression->string_expression != NULL)
                     {
@@ -196,6 +197,10 @@ gint64 evaluate_int_expression(i_expr * iExpr)
                     {
                         return lhs / rhs;
                     }
+                    else
+                    {
+                        divide_by_zero_int_error(iExpr->LHS_expr, iExpr->RHS_expr);
+                    }
                     break;
             }
         }
@@ -280,7 +285,6 @@ gdouble evaluate_double_expression(d_expr * dExpr)
             }
         }
     }
-    return 0.0;
 }
 
 void * evaluate_expression(expr * expression)

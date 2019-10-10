@@ -7,7 +7,9 @@
 #include <errno.h>
 #include <stdlib.h>
 #include "keyword_lookup.h"
+#include "Errors.h"
 
+void scanning_error(char, GArray *);
 
 Token * processCharacter(char c);
 tokenType findTokenType(GString *);
@@ -20,6 +22,7 @@ GArray * ScanFile(char * filePath)
         fprintf(stderr, "Scanner Error:\nCould not open source file located at: %s\nError Number: %d\n%s\n", filePath, errno, strerror(errno));
         exit(-1);
     }
+    __filePath = filePath;
     // Reset our scanner's state so that it can process our new file
     current_state = q0;
     GArray * token_stream = g_array_new(TRUE, TRUE, sizeof(Token));
@@ -30,7 +33,12 @@ GArray * ScanFile(char * filePath)
         Token * next_token = processCharacter((char)c);
         // NULL tokens are expected and common, if the processed character does not terminate a token it will return
         // NULL until another token is passed that will terminate the current token
-        if(next_token != NULL)
+        if(current_state == qERR)
+        {
+            // Scanner blew up, report an error
+            scanning_error((char)c, token_stream);
+        }
+        else if(next_token != NULL)
         {
             // GArray copies input, so we need to free to prevent mem leaks
             g_array_append_val(token_stream, *next_token);
@@ -113,8 +121,9 @@ Token * processCharacter(char c)
         else if(current_state != q17)
         {
             // Something screwed up, time to throw a fit
-            fprintf(stderr, "Scanner Error:\nOn line:%d, column:%d\nCurrent state:%d, Current character:%c", line_number, col_number, current_state, c);
-            exit(-1);
+            previous_state = current_state;
+            current_state = qERR;
+            return NULL;
         }
         current_state = next_state;
     }
@@ -144,8 +153,9 @@ Token * processCharacter(char c)
             else if(next_state == qERR)
             {
                 // Something screwed up, time to throw a fit
-                fprintf(stderr, "Scanner Error:\nOn line:%d, column:%d\nCurrent state:%d, Current character:%c", line_number, col_number, current_state, c);
-                exit(-1);
+                previous_state = current_state;
+                current_state = qERR;
+                return NULL;
             }
             current_state = next_state;
         }
@@ -175,4 +185,26 @@ tokenType findTokenType(GString * buff)
         retVal = lookup->type;
     }
     return retVal;
+}
+
+void scanning_error(char current_char, GArray * token_stream)
+{
+    fprintf(stderr, "Scanner Error: ");
+    switch (previous_state)
+    {
+        case q0:
+            fprintf(stderr, "Unrecognized character: \"%c\"(0x%x), ", current_char, current_char);
+            break;
+        case q2:
+            fprintf(stderr, "Missing numerical digit following decimal, got \"%c\"(0x%x), ", current_char, current_char);
+            break;
+        case q14:
+            fprintf(stderr, "Missing \" following string literal, got \"%c\"(0x%x), ", current_char, current_char);
+            break;
+        default:
+            fprintf(stderr, "UNKNOWN ERROR" );
+    }
+    fprintf(stderr, "\"%s\"", getBrokenStatement(token_stream, token_stream->len)->str);
+    fprintf(stderr, " (%s:%d:%d)\n", __filePath, g_array_index(token_stream, Token, token_stream->len-1).line_num, g_array_index(token_stream, Token, token_stream->len -1).col_num);
+    exit(-1);
 }
