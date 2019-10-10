@@ -3,6 +3,7 @@
 #include "Token.h"
 #include "scanner.h"
 #include "parser.h"
+#include "semantic_analyzer.h"
 #include <errno.h>
 
 void printUsage();
@@ -19,23 +20,38 @@ int main(int argc, char ** argv)
         return -1;
     }
     printf("\n\nFile name: %s\n", argv[1]);
+
+    /// Scanning/Tokenizing
     GTimer * benchTimer = g_timer_new();
     GArray * tokenStream = ScanFile(argv[1]);
     g_timer_stop(benchTimer);
     printf("Time to scan: %.2fus\n", g_timer_elapsed(benchTimer, NULL) * 1000 * 1000);
+
+
+    /// Parsing
     g_timer_start(benchTimer);
     program * parseTree = ParseTokenStream(tokenStream);
     g_timer_stop(benchTimer);
     printf("Time to parse: %.2fus\n", g_timer_elapsed(benchTimer, NULL) * 1000 * 1000);
 
+
+    /// Execution
+    g_timer_start(benchTimer);
+    execute(parseTree);
+    g_timer_stop(benchTimer);
+    printf("Time to execute: %.2fus\n", g_timer_elapsed(benchTimer, NULL) * 1000 * 1000);
+
+
+    /// Debug Information
     g_timer_start(benchTimer);
     dumpDebug(tokenStream, parseTree);
     g_timer_stop(benchTimer);
     printf("Time to dump: %.2fus\n", g_timer_elapsed(benchTimer, NULL) * 1000 * 1000);
 
-//    printTokens(tokenStream);
 
+    /// Clean-up
     cleanup(tokenStream, parseTree, benchTimer, NULL);
+
     return 0;
 }
 

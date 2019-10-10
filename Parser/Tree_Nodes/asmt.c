@@ -20,7 +20,6 @@ asmt * create_asmt(GArray * tokenStream, unsigned long index, unsigned long * ne
     Token * curToken = &g_array_index(tokenStream, Token, index); // Token is type
 
     asmt * new_asmt = calloc(1, sizeof(asmt));
-    new_asmt->type_token = curToken;
 
 
     // Need to try expression before we add the ID, because it cannot be self-referencing
@@ -70,14 +69,10 @@ asmt * create_asmt(GArray * tokenStream, unsigned long index, unsigned long * ne
         fprintf(stderr, "Syntax Error: Tried to create a variable that already exists");
         exit(-1);
     }
-    new_asmt->id = curToken;
+    new_asmt->id = create_id_node(curToken);
 
     curToken = &g_array_index(tokenStream, Token, index+2);
-    if(curToken->type == t_assign)
-    {
-        new_asmt->assign = curToken; // Token is '='
-    }
-    else
+    if(curToken->type != t_assign)
     {
         fprintf(stderr, "Syntax Error: Unexpected Token in assignment");
         exit(-1);
@@ -86,8 +81,6 @@ asmt * create_asmt(GArray * tokenStream, unsigned long index, unsigned long * ne
     curToken = &g_array_index(tokenStream, Token, *next);
     if(curToken->type == t_end_stmt)
     {
-        new_asmt->end = curToken;  // Token is ';'
-        // Increment our ending index because we consumed the ';'
         (*next)++;
     }
     else
@@ -104,34 +97,10 @@ GString * asmt_to_json(asmt * assignment)
     GString * retVal = g_string_new(NULL);
     if(assignment != NULL)
     {
-        g_string_append(retVal, "{\"Type_Token\": ");
-        if(assignment->type_token != NULL)
-        {
-            GString * Child = token_to_json(assignment->type_token);
-            g_string_append(retVal, Child->str);
-            g_string_free(Child, TRUE);
-        }
-        else
-        {
-            g_string_append(retVal, "null");
-        }
-
-        g_string_append(retVal, ", \"ID\": ");
+        g_string_append(retVal, "{\"ID\": ");
         if(assignment->id != NULL)
         {
-            GString * Child = token_to_json(assignment->id);
-            g_string_append(retVal, Child->str);
-            g_string_free(Child, TRUE);
-        }
-        else
-        {
-            g_string_append(retVal, "null");
-        }
-
-        g_string_append(retVal, ", \"Assign\": ");
-        if(assignment->assign != NULL)
-        {
-            GString * Child = token_to_json(assignment->assign);
+            GString * Child = id_node_to_json(assignment->id);
             g_string_append(retVal, Child->str);
             g_string_free(Child, TRUE);
         }
@@ -144,18 +113,6 @@ GString * asmt_to_json(asmt * assignment)
         if(assignment->expression != NULL)
         {
             GString * Child = expr_to_json(assignment->expression);
-            g_string_append(retVal, Child->str);
-            g_string_free(Child, TRUE);
-        }
-        else
-        {
-            g_string_append(retVal, "null");
-        }
-
-        g_string_append(retVal, ", \"End\": ");
-        if(assignment->end != NULL)
-        {
-            GString * Child = token_to_json(assignment->end);
             g_string_append(retVal, Child->str);
             g_string_free(Child, TRUE);
         }
@@ -179,6 +136,10 @@ void destroy_asmt(asmt * assignment)
         if(assignment->expression != NULL)
         {
             destroy_expr(assignment->expression);
+        }
+        if(assignment->id != NULL)
+        {
+            destroy_id_node(assignment->id);
         }
         free(assignment);
     }

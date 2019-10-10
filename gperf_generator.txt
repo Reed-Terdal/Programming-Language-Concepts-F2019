@@ -1,5 +1,5 @@
 %{
-#include Token.h
+#include <Token.h>
 %}
 
 struct keyword_lookup {char *name; int type};

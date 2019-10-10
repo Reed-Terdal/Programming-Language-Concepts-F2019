@@ -15,7 +15,6 @@ typedef struct stmt
     f_call * function_call;
     asmt * assignment;
     expr * expression;
-    Token * end_statement;
 }stmt;
 
 stmt * create_stmt(GArray *, unsigned long, unsigned long *);

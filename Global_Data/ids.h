@@ -19,8 +19,20 @@ typedef enum Type
     jstring
 }Type;
 
+typedef struct runtime_variable
+{
+    Type type;
+    void * value;
+} runtime_variable;
+
 gboolean addIDtoTable(GString *, Type);
 
 gboolean findIDType(GString *, Type *);
+
+void setGlobalVariable(GString * id, void * value);
+
+runtime_variable * getGlobalVariable(GString * id);
+
+void destroyGlobalScope();
 
 #endif //JOTT_INTERPRETTER_IDS_H

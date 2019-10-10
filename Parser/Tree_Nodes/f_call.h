@@ -7,15 +7,14 @@
 
 #include <Token.h>
 #include <stdbool.h>
+#include "id_node.h"
 #include "p_list.h"
 
 
 
 typedef struct f_call{
-    Token * id;
-    Token * s_paren;
+    id_node * id;
     p_list * params; // Nullable
-    Token * e_paren;
 }f_call;
 
 f_call * create_f_call(GArray *, unsigned long, unsigned long *);

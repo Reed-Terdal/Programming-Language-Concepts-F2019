@@ -1,3 +1,5 @@
+3 * 5 + 2 ^ 6;
+
 // larger program
 print( 3 );
 print( 3.2 );

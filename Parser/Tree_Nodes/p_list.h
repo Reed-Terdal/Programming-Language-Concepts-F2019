@@ -12,8 +12,7 @@ typedef struct expr expr;
 
 typedef struct p_list{
     expr * expression;
-    Token * comma;       // This
-    struct p_list * next;// and this must both be NULL or non-NULL
+    struct p_list * next;
 }p_list;
 
 p_list * create_p_list(GArray *, unsigned long, unsigned long *);

@@ -25,7 +25,6 @@ stmt * create_stmt(GArray * token_stream, unsigned long index, unsigned long * n
         case t_string:
             // 3. Expression
             new_statement->expression = create_expr(token_stream, index, next);
-            new_statement->end_statement = &g_array_index(token_stream, Token, *next);
             (*next)++;
             break;
         case t_id:
@@ -37,15 +36,11 @@ stmt * create_stmt(GArray * token_stream, unsigned long index, unsigned long * n
                 switch (id_type)
                 {
                     case jf_void:
-                    case jf_str:
-                    case jf_double:
-                    case jf_int:
                         // Function call
                         new_statement->function_call = create_f_call(token_stream, index, next);
                         curToken = &g_array_index(token_stream, Token, *next);
                         if(curToken->type == t_end_stmt)
                         {
-                            new_statement->end_statement = curToken;
                             (*next)++;
                         }
                         else
@@ -54,6 +49,9 @@ stmt * create_stmt(GArray * token_stream, unsigned long index, unsigned long * n
                             exit(-1);
                         }
                         break;
+                    case jf_str:
+                    case jf_double:
+                    case jf_int:
                     case jint:
                     case jdouble:
                     case jstring:
@@ -62,7 +60,6 @@ stmt * create_stmt(GArray * token_stream, unsigned long index, unsigned long * n
                         curToken = &g_array_index(token_stream, Token, *next);
                         if(curToken->type == t_end_stmt)
                         {
-                            new_statement->end_statement = curToken;
                             (*next)++;
                         }
                         else
@@ -132,18 +129,6 @@ GString * stmt_to_json(stmt * statement)
         if(statement->function_call != NULL)
         {
             GString * child = f_call_to_json(statement->function_call);
-            g_string_append(retVal, child->str);
-            g_string_free(child, TRUE);
-        }
-        else
-        {
-            g_string_append(retVal, "null");
-        }
-
-        g_string_append(retVal, ", \"End_Statement\": ");
-        if(statement->end_statement != NULL)
-        {
-            GString * child = token_to_json(statement->end_statement);
             g_string_append(retVal, child->str);
             g_string_free(child, TRUE);
         }

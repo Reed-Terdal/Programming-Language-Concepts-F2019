@@ -7,12 +7,15 @@
 
 #include <Token.h>
 #include <stdbool.h>
+#include "id_node.h"
+#include "string_node.h"
 #include "f_call.h"
 
 typedef struct s_expr
 {
-    Token * literal; // Only one can be non-null
-    Token * id;
+    // Only one can be non-null
+    string_node * literal;
+    id_node * id;
     f_call * function_call;
 }s_expr;
 

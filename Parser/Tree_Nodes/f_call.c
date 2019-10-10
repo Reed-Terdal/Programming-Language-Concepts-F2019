@@ -28,12 +28,11 @@ f_call * create_f_call(GArray * tokenStream, unsigned long index, unsigned long 
                 case jf_void:
                 case jf_double:
                 case jf_int:
-                    new_f_call->id = curToken;
+                    new_f_call->id = create_id_node(curToken);
                     (*next)++;
                     curToken = &g_array_index(tokenStream, Token, index+1);
                     if(curToken->type == t_start_paren)
                     {
-                        new_f_call->s_paren = curToken;
                         (*next)++;
                     }
                     else
@@ -47,7 +46,6 @@ f_call * create_f_call(GArray * tokenStream, unsigned long index, unsigned long 
                     curToken = &g_array_index(tokenStream, Token, *next);
                     if(curToken->type == t_end_paren)
                     {
-                        new_f_call->e_paren = curToken;
                         (*next)++;
                     }
                     else
@@ -83,19 +81,7 @@ GString * f_call_to_json(f_call * fCall)
         g_string_append(retVal, "{\"ID\": ");
         if(fCall->id != NULL)
         {
-            GString * child = token_to_json(fCall->id);
-            g_string_append(retVal, child->str);
-            g_string_free(child, TRUE);
-        }
-        else
-        {
-            g_string_append(retVal, "null");
-        }
-
-        g_string_append(retVal, ", \"Start_Paren\": ");
-        if(fCall->s_paren != NULL)
-        {
-            GString * child = token_to_json(fCall->s_paren);
+            GString * child = id_node_to_json(fCall->id);
             g_string_append(retVal, child->str);
             g_string_free(child, TRUE);
         }
@@ -115,19 +101,6 @@ GString * f_call_to_json(f_call * fCall)
         {
             g_string_append(retVal, "null");
         }
-
-        g_string_append(retVal, ", \"End_Paren\": ");
-        if(fCall->e_paren != NULL)
-        {
-            GString * child = token_to_json(fCall->e_paren);
-            g_string_append(retVal, child->str);
-            g_string_free(child, TRUE);
-        }
-        else
-        {
-            g_string_append(retVal, "null");
-        }
-
         g_string_append_c(retVal, '}');
     }
     else
@@ -144,6 +117,10 @@ void destroy_f_call(f_call * fCall)
         if(fCall->params != NULL)
         {
             destroy_p_list(fCall->params);
+        }
+        if(fCall->id != NULL)
+        {
+            destroy_id_node(fCall->id);
         }
         free(fCall);
     }

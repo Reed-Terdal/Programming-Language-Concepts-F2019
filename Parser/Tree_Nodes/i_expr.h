@@ -8,12 +8,15 @@
 #include "Token.h"
 #include "f_call.h"
 #include <stdbool.h>
+#include "int_node.h"
+#include "operator_node.h"
+#include "id_node.h"
 
 typedef struct i_expr
 {
-    Token * id;
-    Token * int_literal;
-    Token * operator;
+    id_node * id;
+    int_node * literal;
+    operator_node * operatorNode;
     struct i_expr * RHS_expr;
     struct i_expr * LHS_expr;
     f_call * function_call;

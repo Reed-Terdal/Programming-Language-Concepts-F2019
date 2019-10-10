@@ -5,14 +5,17 @@
 #ifndef JOTT_INTERPRETTER_D_EXPR_H
 #define JOTT_INTERPRETTER_D_EXPR_H
 
+#include "operator_node.h"
+#include "id_node.h"
+#include "double_node.h"
 #include "Token.h"
 #include "f_call.h"
 
 typedef struct d_expr
 {
-    Token * id;
-    Token * double_literal;
-    Token * operator;
+    id_node * id;
+    double_node * double_literal;
+    operator_node * operator;
     struct d_expr * RHS_expr;
     struct d_expr * LHS_expr;
     f_call * function_call;

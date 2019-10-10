@@ -16,7 +16,7 @@ s_expr * create_s_expr(GArray * token_stream, unsigned long index, unsigned long
     {
         case t_string:
             // Easy, this is a string literal
-            new_s_expr->literal = curToken;
+            new_s_expr->literal = create_string_node(curToken);
             (*next)= index + 1;
             break;
         case t_id:
@@ -29,7 +29,7 @@ s_expr * create_s_expr(GArray * token_stream, unsigned long index, unsigned long
                 if(id_type == jstring)
                 {
                     // The id is for another string var
-                    new_s_expr->id = curToken;
+                    new_s_expr->id = create_id_node(curToken);
                     (*next)= index + 1;
                 }
                 else if(id_type == jf_str)
@@ -77,7 +77,7 @@ GString * s_expr_to_json(s_expr * sExpr)
         g_string_append(retVal, ", \"String_Literal\": ");
         if(sExpr->literal != NULL)
         {
-            GString * child = token_to_json(sExpr->literal);
+            GString * child = string_node_to_json(sExpr->literal);
             g_string_append(retVal, child->str);
             g_string_free(child, TRUE);
         }
@@ -89,7 +89,7 @@ GString * s_expr_to_json(s_expr * sExpr)
         g_string_append(retVal, ", \"ID_String\": ");
         if(sExpr->id != NULL)
         {
-            GString * child = token_to_json(sExpr->id);
+            GString * child = id_node_to_json(sExpr->id);
             g_string_append(retVal, child->str);
             g_string_free(child, TRUE);
         }
@@ -113,6 +113,14 @@ void destroy_s_expr(s_expr * sExpr)
         if(sExpr->function_call != NULL)
         {
             destroy_f_call(sExpr->function_call);
+        }
+        if(sExpr->id != NULL)
+        {
+            destroy_id_node(sExpr->id);
+        }
+        if(sExpr->literal != NULL)
+        {
+            destroy_string_node(sExpr->literal);
         }
         free(sExpr);
     }

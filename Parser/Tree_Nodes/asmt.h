@@ -11,12 +11,9 @@
 #include "expr.h"
 
 typedef struct asmt{
-    Token * type_token;
     Type type; // Double_type Int_type String_Type
-    Token * id;
-    Token * assign;
+    id_node * id;
     expr * expression; // i_expr, d_expr, s_expr
-    Token * end;
 } asmt;
 
 asmt * create_asmt(GArray *, unsigned long, unsigned long *);

@@ -28,7 +28,6 @@ p_list * create_p_list(GArray * token_stream, unsigned long index, unsigned long
             if(curToken->type == t_comma)
             {
                 // More parameters should be present
-                new_p_list->comma = curToken;
                 (*next)++;
                 if(g_array_index(token_stream, Token, *next).type != t_end_paren)
                 {
@@ -68,18 +67,6 @@ GString * p_list_to_json(p_list * pList)
         if(pList->expression != NULL)
         {
             GString * child = expr_to_json(pList->expression);
-            g_string_append(retVal, child->str);
-            g_string_free(child, TRUE);
-        }
-        else
-        {
-            g_string_append(retVal, "null");
-        }
-
-        g_string_append(retVal, ", \"Comma\": ");
-        if(pList->comma != NULL)
-        {
-            GString * child = token_to_json(pList->comma);
             g_string_append(retVal, child->str);
             g_string_free(child, TRUE);
         }
