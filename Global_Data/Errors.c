@@ -1,9 +1,21 @@
-//
-// Created by rterdal on 10/10/19.
-//
+/**************************************************************************************************
+*
+* File Name: Errors.c
+*
+* Author: Reed Terdal
+*
+* Created for CS344 on: 10/10/2019
+*
+* Purpose: Provides helpers for common error printing utilities.
+ * If an error occurs at any point the interpreter will try to print an appropriate message using these methods.
+*
+**************************************************************************************************/
 
 #include "Errors.h"
+#include "d_expr.h"
+
 GString * i_expr_to_str(i_expr * iExpr);
+GString * d_expr_to_str(d_expr * dExpr);
 
 void type_error(GString * expected, Type actual, GArray * token_stream, unsigned long start)
 {
@@ -114,7 +126,7 @@ void unexpected_token_error(GString * expected, tokenType actual, GArray * token
 void divide_by_zero_int_error(i_expr * lhs, i_expr * rhs)
 {
     fprintf(stderr, "Runtime Error: Divide by zero, \"%s / %s\"", i_expr_to_str(lhs)->str, i_expr_to_str(rhs)->str);
-    fprintf(stderr, " (%s)\n", __filePath);
+    fprintf(stderr, " (%s:%lu)\n", __filePath, 0ul);
     exit(-1);
 }
 
@@ -154,6 +166,55 @@ GString * i_expr_to_str(i_expr * iExpr)
                     break;
             }
             g_string_append(retval, i_expr_to_str(iExpr->RHS_expr)->str);
+        }
+    }
+
+    return retval;
+}
+
+void divide_by_zero_double_error(d_expr * lhs, d_expr * rhs)
+{
+    fprintf(stderr, "Runtime Error: Divide by zero, \"%s / %s\"", d_expr_to_str(lhs)->str, d_expr_to_str(rhs)->str);
+    fprintf(stderr, " (%s:%lu)\n", __filePath, 0ul);
+    exit(-1);
+}
+
+GString * d_expr_to_str(d_expr * dExpr)
+{
+    GString * retval = g_string_new(NULL);
+
+    if(dExpr != NULL)
+    {
+        if(dExpr->id != NULL)
+        {
+            g_string_append(retval, dExpr->id->id->str);
+        }
+        else if(dExpr->double_literal != NULL)
+        {
+            g_string_printf(retval, "%1.9g", dExpr->double_literal->value);
+        }
+        else if(dExpr->LHS_expr != NULL && dExpr->operator != NULL && dExpr->RHS_expr != NULL)
+        {
+            g_string_append(retval, d_expr_to_str(dExpr->LHS_expr)->str);
+            switch (dExpr->operator->opType)
+            {
+                case op_add:
+                    g_string_append(retval, " + ");
+                    break;
+                case op_sub:
+                    g_string_append(retval, " - ");
+                    break;
+                case op_mult:
+                    g_string_append(retval, " * ");
+                    break;
+                case op_div:
+                    g_string_append(retval, " / ");
+                    break;
+                case op_pow:
+                    g_string_append(retval, " ^ ");
+                    break;
+            }
+            g_string_append(retval, d_expr_to_str(dExpr->RHS_expr)->str);
         }
     }
 

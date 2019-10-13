@@ -3,11 +3,26 @@
 #include "Token.h"
 #include "scanner.h"
 #include "parser.h"
-#include "semantic_analyzer.h"
+#include "executer.h"
 #include <errno.h>
 
+/**
+ * @brief Prints how to use the program
+ */
 void printUsage();
+/**
+ * @brief Frees all memory for the program.
+ * @param tokens The token stream of the program
+ * @param tree The parse tree of the program
+ * @param timer The timer used for benchmarking
+ */
 void cleanup(GArray * tokens, program * tree, GTimer * timer, GString *);
+/**
+ * @brief writes a JSON file with debug information about the program
+ * @param The token stream of the program
+ * @param The parse tree of the program
+ * @param A string with metadata about the program
+ */
 void dumpDebug(GArray *, program *, GString *);
 
 int main(int argc, char ** argv)

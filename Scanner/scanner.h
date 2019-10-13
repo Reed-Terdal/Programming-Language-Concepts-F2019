@@ -1,6 +1,15 @@
-//
-// Created by reedt on 9/17/2019.
-//
+/**************************************************************************************************
+*
+* File Name: scanner.h
+*
+* Author: Reed Terdal
+*
+* Created for CS344 on: 09/17/2019
+*
+* Purpose: Header that provides access to the scanner, which tokenize the input program.
+*
+**************************************************************************************************/
+
 
 #ifndef JOTT_INTERPRETTER_SCANNER_H
 #define JOTT_INTERPRETTER_SCANNER_H

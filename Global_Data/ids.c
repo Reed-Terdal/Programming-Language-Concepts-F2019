@@ -1,6 +1,14 @@
-//
-// Created by reedt on 10/7/2019.
-//
+/**************************************************************************************************
+*
+* File Name: ids.c
+*
+* Author: Reed Terdal
+*
+* Created for CS344 on: 10/07/2019
+*
+* Purpose: Functions that are responsible for providing access to the type system and runtime variables for Jott.
+*
+**************************************************************************************************/
 
 #include "ids.h"
 
@@ -40,6 +48,10 @@ gboolean findIDType(GString *id, Type *ret_type)
     return FALSE;
 }
 
+/**
+ * @brief This function is responsible for doing the initialization for the type table.
+ * This involves allocating the hash table and adding in all natively bound functions.
+ */
 void initialize_type_table()
 {
     if (id_to_type == NULL)

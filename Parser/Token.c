@@ -1,6 +1,15 @@
-//
-// Created by reedt on 10/9/2019.
-//
+/**************************************************************************************************
+*
+* File Name: Token.c
+*
+* Author: Reed Terdal
+*
+* Created for CS344 on: 09/21/2019
+*
+* Purpose: code that implements the token to JSON converter.
+*
+**************************************************************************************************/
+
 #include "Token.h"
 
 GString * token_to_json(Token * token)

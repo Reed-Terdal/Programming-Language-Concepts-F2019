@@ -1,10 +1,17 @@
-//
-// Created by reedt on 9/25/2019.
-//
+/**************************************************************************************************
+*
+* File Name: stmt.c
+*
+* Author: Reed Terdal
+*
+* Created for CS344 on: 09/25/2019
+*
+* Purpose: code that provides functions for manipulating statement nodes.
+*
+**************************************************************************************************/
 
 #include <stdio.h>
 #include "stmt.h"
-#include "ids.h"
 
 stmt * create_stmt(GArray * token_stream, unsigned long index, unsigned long * next)
 {

@@ -1,7 +1,14 @@
-//
-// Created by reedt on 9/26/2019.
-//
-
+/**************************************************************************************************
+*
+* File Name: p_list.c
+*
+* Author: Reed Terdal
+*
+* Created for CS344 on: 09/26/2019
+*
+* Purpose: code that provides functions for manipulating parameter list nodes.
+*
+**************************************************************************************************/
 #include <stdio.h>
 #include <ids.h>
 #include "p_list.h"

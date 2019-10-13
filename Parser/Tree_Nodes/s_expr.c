@@ -1,6 +1,14 @@
-//
-// Created by reedt on 9/25/2019.
-//
+/**************************************************************************************************
+*
+* File Name: s_expr.c
+*
+* Author: Reed Terdal
+*
+* Created for CS344 on: 09/25/2019
+*
+* Purpose: code that provides functions for manipulating string expression nodes.
+*
+**************************************************************************************************/
 
 #include <stdio.h>
 #include <ids.h>

@@ -1,6 +1,15 @@
-//
-// Created by rterdal on 9/21/19.
-//
+/**************************************************************************************************
+*
+* File Name: scannerData.h
+*
+* Author: Reed Terdal
+*
+* Created for CS344 on: 09/17/2019
+*
+* Purpose: Data needed for the scanner.
+*
+**************************************************************************************************/
+
 
 #ifndef JOTT_INTERPRETTER_SCANNERDATA_H
 #define JOTT_INTERPRETTER_SCANNERDATA_H

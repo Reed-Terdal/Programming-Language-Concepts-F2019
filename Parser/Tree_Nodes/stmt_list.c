@@ -1,6 +1,15 @@
-//
-// Created by reedt on 9/25/2019.
-//
+/**************************************************************************************************
+*
+* File Name: stmt_list.c
+*
+* Author: Reed Terdal
+*
+* Created for CS344 on: 09/25/2019
+*
+* Purpose: code that provides functions for manipulating statement list nodes.
+*
+**************************************************************************************************/
+
 
 #include "stmt_list.h"
 

@@ -1,11 +1,18 @@
-//
-// Created by reedt on 9/25/2019.
-//
+/**************************************************************************************************
+*
+* File Name: asmt.c
+*
+* Author: Reed Terdal
+*
+* Created for CS344 on: 09/25/2019
+*
+* Purpose: code that provides functions for manipulating asmt nodes.
+*
+**************************************************************************************************/
+
 
 #include <stdio.h>
 #include "asmt.h"
-#include "ids.h"
-
 
 asmt * create_asmt(GArray * tokenStream, unsigned long index, unsigned long * next)
 {

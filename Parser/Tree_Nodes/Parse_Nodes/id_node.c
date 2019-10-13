@@ -1,6 +1,14 @@
-//
-// Created by reedt on 10/9/2019.
-//
+/**************************************************************************************************
+*
+* File Name: id_node.c
+*
+* Author: Reed Terdal
+*
+* Created for CS344 on: 10/09/2019
+*
+* Purpose: Code that provides functions for manipulating ID nodes.
+*
+**************************************************************************************************/
 
 #include <stdio.h>
 #include "id_node.h"

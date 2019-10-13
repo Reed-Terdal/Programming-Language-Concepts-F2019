@@ -1,10 +1,17 @@
-//
-// Created by reedt on 9/25/2019.
-//
+/**************************************************************************************************
+*
+* File Name: expr.c
+*
+* Author: Reed Terdal
+*
+* Created for CS344 on: 09/25/2019
+*
+* Purpose: code that provides functions for manipulating expression nodes.
+*
+**************************************************************************************************/
 
 #include <stdio.h>
 #include "expr.h"
-#include "ids.h"
 
 expr * create_expr(GArray * token_stream, unsigned long index, unsigned long * next)
 {

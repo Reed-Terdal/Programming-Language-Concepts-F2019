@@ -1,6 +1,15 @@
-//
-// Created by reedt on 10/9/2019.
-//
+/**************************************************************************************************
+*
+* File Name: int_node.c
+*
+* Author: Reed Terdal
+*
+* Created for CS344 on: 10/09/2019
+*
+* Purpose: code provides functions for manipulating int nodes.
+*
+**************************************************************************************************/
+
 
 #include <errno.h>
 #include <stdio.h>

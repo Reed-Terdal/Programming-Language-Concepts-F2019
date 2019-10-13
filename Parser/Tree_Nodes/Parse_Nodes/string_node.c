@@ -1,6 +1,14 @@
-//
-// Created by reedt on 10/9/2019.
-//
+/**************************************************************************************************
+*
+* File Name: string_node.c
+*
+* Author: Reed Terdal
+*
+* Created for CS344 on: 10/09/2019
+*
+* Purpose: code that provides functions for manipulating string nodes.
+*
+**************************************************************************************************/
 
 #include "string_node.h"
 

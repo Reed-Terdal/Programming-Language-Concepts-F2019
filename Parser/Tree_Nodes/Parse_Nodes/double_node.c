@@ -1,6 +1,14 @@
-//
-// Created by reedt on 10/9/2019.
-//
+/**************************************************************************************************
+*
+* File Name: double_node.c
+*
+* Author: Reed Terdal
+*
+* Created for CS344 on: 10/09/2019
+*
+* Purpose: Code provides functions for manipulating double literal values.
+*
+**************************************************************************************************/
 
 #include <errno.h>
 #include <stdio.h>

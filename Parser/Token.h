@@ -1,6 +1,14 @@
-//
-// Created by rterdal on 9/21/19.
-//
+/**************************************************************************************************
+*
+* File Name: Token.h
+*
+* Author: Reed Terdal
+*
+* Created for CS344 on: 09/21/2019
+*
+* Purpose: Header that defines tokens that are created from the scanner and consumed by the parser.
+*
+**************************************************************************************************/
 
 #ifndef JOTT_INTERPRETTER_TOKEN_H
 #define JOTT_INTERPRETTER_TOKEN_H
@@ -46,6 +54,11 @@ typedef struct Token{
     GString * data;
 }Token;
 
+/**
+ * @brief Creates a JSON formatted string that represents a Token
+ * @param token The token to create a JSON string for
+ * @return The JSON formatted string.
+ */
 GString * token_to_json(Token * token);
 
 #endif //JOTT_INTERPRETTER_TOKEN_H

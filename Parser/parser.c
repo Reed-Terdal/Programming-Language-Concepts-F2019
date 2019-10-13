@@ -1,10 +1,17 @@
-//
-// Created by reedt on 9/17/2019.
-//
+/**************************************************************************************************
+*
+* File Name: parser.c
+*
+* Author: Reed Terdal
+*
+* Created for CS344 on: 09/17/2019
+*
+* Purpose: Code for creation of a parse tree.
+*
+**************************************************************************************************/
 
 #include <stdio.h>
 #include "parser.h"
-#include "parserData.h"
 #include "Token.h"
 
 program * ParseTokenStream(GArray * tokenStream)

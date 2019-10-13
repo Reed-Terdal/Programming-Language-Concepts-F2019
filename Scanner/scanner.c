@@ -1,6 +1,15 @@
-//
-// Created by reedt on 9/17/2019.
-//
+/**************************************************************************************************
+*
+* File Name: scanner.c
+*
+* Author: Reed Terdal
+*
+* Created for CS344 on: 09/17/2019
+*
+* Purpose: Code needed for the scanner.
+*
+**************************************************************************************************/
+
 
 #include "scanner.h"
 #include "scannerData.h"
@@ -9,9 +18,23 @@
 #include "keyword_lookup.h"
 #include "Errors.h"
 
+/**
+ * @brief Function that prints and exists on a scanning error
+ * @param The character that violated scanning.
+ * @param The current array of tokens
+ */
 void scanning_error(char, GArray *);
 
+/**
+ * @brief Processes a character and attempts to build a token
+ * @param c The current character that is being processed
+ * @return a new token or NULL if the end of the token has not been reached.
+ */
 Token * processCharacter(char c);
+/**
+ * @brief Identifies what kind of has been found based on the string.
+ * @return The type of the token.
+ */
 tokenType findTokenType(GString *);
 
 GArray * ScanFile(char * filePath)

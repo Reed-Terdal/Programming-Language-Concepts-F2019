@@ -1,11 +1,18 @@
-//
-// Created by reedt on 9/25/2019.
-//
+/**************************************************************************************************
+*
+* File Name: d_expr_node.c
+*
+* Author: Reed Terdal
+*
+* Created for CS344 on: 09/25/2019
+*
+* Purpose: code that provides access to functions for manipulating double expression nodes.
+*
+**************************************************************************************************/
 
 #include <ids.h>
 #include <stdio.h>
 #include "d_expr.h"
-#include "Errors.h"
 
 d_expr * internal_d_expr_constructor(d_expr * parent, GArray * token_stream, unsigned long index, unsigned long * next);
 

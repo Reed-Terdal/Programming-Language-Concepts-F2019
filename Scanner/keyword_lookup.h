@@ -1,7 +1,15 @@
-//
-// Created by reedt on 9/26/2019.
-//
-
+/**************************************************************************************************
+*
+* File Name: keyword_lookup.h
+*
+* Author: Reed Terdal
+*
+* Created for CS344 on: 09/26/2019
+*
+* Purpose: Header that defines a perfect hash table for finding keywords in the Jott language.
+* See GPerf for more information
+*
+**************************************************************************************************/
 #ifndef JOTT_INTERPRETTER_KEYWORD_LOOKUP_H
 #define JOTT_INTERPRETTER_KEYWORD_LOOKUP_H
 
