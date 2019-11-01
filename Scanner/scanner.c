@@ -224,6 +224,9 @@ void scanning_error(char current_char, GArray * token_stream)
         case q14:
             fprintf(stderr, "Missing \" following string literal, got \"%c\"(0x%x), ", current_char, current_char);
             break;
+        case q22:
+            fprintf(stderr, "Missing \"=\" following !, got \"%c\"(0x%x)", current_char, current_char);
+            break;
         default:
             fprintf(stderr, "UNKNOWN ERROR" );
     }

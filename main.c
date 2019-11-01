@@ -105,31 +105,60 @@ void cleanup(GArray * tokens, program * tree, GTimer * timer, GString * json)
 
 void dumpDebug(GArray * tokenStream, program * prog, GString * metadata)
 {
-    FILE * out = fopen("./dump.json", "w");
+    static int count = 0;
+
+    char buf[20];
+
+    if(count == 0)
+    {
+        sprintf(buf, "./dump.json");
+    }
+    else
+    {
+        sprintf(buf, "./dump(%d).json", count);
+    }
+
+    FILE * out = fopen(buf, "w");
     if( out == NULL)
     {
         printf("Debug dump failed with Error Num: %d\n", errno);
         return;
     }
-    GString * json = g_string_new(NULL);
-    g_string_printf(json, "{\"Metadata\": %s", metadata->str);
-    g_string_append(json, ", \"Tokens\": [");
-    for(unsigned int i = 0; i < tokenStream->len; i++)
+
+    GString * json = g_string_new("{");
+
+    if(metadata != NULL)
     {
-        GString * child = token_to_json(&g_array_index(tokenStream, Token, i));
+        g_string_append_printf(json, "\"Metadata\": %s,", metadata->str);
+    }
+
+    if(tokenStream != NULL)
+    {
+        g_string_append(json, "\"Tokens\": [");
+        for(unsigned int i = 0; i < tokenStream->len; i++)
+        {
+            GString * child = token_to_json(&g_array_index(tokenStream, Token, i));
+            g_string_append(json, child->str);
+            g_string_free(child, TRUE);
+            g_string_append(json, ", ");
+        }
+        g_string_truncate(json, json->len - 2 ); // removes the last ','
+        g_string_append(json, "],");
+    }
+
+    if(prog != NULL)
+    {
+        g_string_append(json, "\"Parse_Tree\": {\"Program\": ");
+        GString * child = prog_to_json(prog);
         g_string_append(json, child->str);
         g_string_free(child, TRUE);
-        g_string_append(json, ", ");
+        g_string_append_c(json, '}');
     }
-    g_string_truncate(json, json->len - 2 ); // removes the last ','
-    g_string_append(json, "], \"Parse_Tree\": {\"Program\": ");
-    GString * child = prog_to_json(prog);
-    g_string_append(json, child->str);
-    g_string_free(child, TRUE);
-    g_string_append(json, "}}");
+    g_string_append_c(json, '}');
 
     fputs(json->str, out);
     fflush(out);
     fclose(out);
     g_string_free(json, TRUE);
+    count++;
 }
