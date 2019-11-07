@@ -1,9 +1,13 @@
 %{
-#include <Token.h>
+#include "Token.h"
 %}
 
-struct keyword_lookup {char *name; int type};
+struct keyword_lookup {char *name; int type;};
 %%
 Double, t_type_double
 Integer, t_type_integer
 String, t_type_string
+for, t_for
+while, t_while
+if, t_if
+else, t_else
