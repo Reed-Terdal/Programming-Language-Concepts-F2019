@@ -13,9 +13,11 @@
 #ifndef JOTT_INTERPRETTER_STMT_H
 #define JOTT_INTERPRETTER_STMT_H
 
+#include "for_node.h"
+#include "while_node.h"
+#include "if_node.h"
 #include "f_call.h"
 #include "asmt.h"
-#include "expr.h"
 #include <glib.h>
 
 /**
@@ -26,10 +28,13 @@
  */
 typedef struct stmt
 {
+    if_node * ifBlock;
+    for_node * forLoop;
+    while_node * whileLoop;
     f_call * function_call;
     asmt * assignment;
     expr * expression;
-}stmt;
+} stmt;
 
 
 /**

@@ -38,6 +38,7 @@ stmt * create_stmt(GArray * token_stream, unsigned long index, unsigned long * n
         {
             // Could be function call or expression
             Type id_type;
+            fprintf(stderr,"%s",curToken->data->str);
             if(findIDType(curToken->data, &id_type))
             {
                 switch (id_type)
@@ -93,6 +94,24 @@ stmt * create_stmt(GArray * token_stream, unsigned long index, unsigned long * n
             // 2. Assignment
             new_statement->assignment = create_asmt(token_stream, index, next);
             break;
+
+            // Conditional/loops
+        case t_for:
+            new_statement->forLoop = create_for_node(token_stream, index, next);
+            break;
+        case t_while:
+            new_statement->whileLoop = create_while_node(token_stream, index, next);
+            break;
+
+            // Both if and else use the same ifBlock parameter, as they should be defined in separate b_lists
+        case t_if:
+            new_statement->ifBlock = create_if_node(token_stream, index, next);
+            break;
+        case t_else:
+            new_statement->ifBlock = create_if_node(token_stream, index, next);
+            break;
+
+
         default:
             // Unexpected token when creating Statement, not function call, assignment, or expression
             fprintf(stderr, "Syntax Error: Unexpected Token when creating statement");
