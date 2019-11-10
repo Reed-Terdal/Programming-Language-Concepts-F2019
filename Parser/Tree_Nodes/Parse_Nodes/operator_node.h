@@ -25,7 +25,13 @@ enum op_type
     op_sub,
     op_mult,
     op_div,
-    op_pow
+    op_pow,
+    op_greater,
+    op_goe,
+    op_less,
+    op_loe,
+    op_eq,
+    op_neq
 };
 
 typedef struct operator_node

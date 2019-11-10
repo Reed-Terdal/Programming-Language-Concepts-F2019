@@ -105,6 +105,12 @@ i_expr * internal_i_expr_constructor(i_expr * parent, GArray * token_stream, uns
         case t_divide:
         case t_minus:
         case t_power:
+        case t_comp_eq:
+        case t_comp_goe:
+        case t_comp_greater:
+        case t_comp_less:
+        case t_comp_loe:
+        case t_comp_neq:
             new_i_expr->operatorNode = create_operator(curToken);
             break;
         case t_end_paren:
@@ -114,6 +120,9 @@ i_expr * internal_i_expr_constructor(i_expr * parent, GArray * token_stream, uns
             (*next) = curIndex;
             ret_val = new_i_expr->LHS_expr;
             free(new_i_expr); // We don't want it anymore, because it only has an LHS node
+            break;
+
+            new_i_expr->operatorNode = create_operator(curToken);
             break;
         default:
             // Next token is not an operation

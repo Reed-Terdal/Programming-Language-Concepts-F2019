@@ -32,7 +32,7 @@ expr * create_expr(GArray * token_stream, unsigned long index, unsigned long * n
             if(!findIDType(first->data, &exprType))
             {
                 // ID has not been declared yet.
-                fprintf(stderr, "Syntax Error: Tried to use variable before it has been declared");
+                fprintf(stderr, "Syntax Error: Tried to use variable before it has been declared %i", first->line_num);
                 exit(-1);
             }
             break;
