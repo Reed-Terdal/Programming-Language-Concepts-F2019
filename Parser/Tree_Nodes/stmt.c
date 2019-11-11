@@ -23,6 +23,7 @@ stmt * create_stmt(GArray * token_stream, unsigned long index, unsigned long * n
     // 3. Expression
 
     Token * curToken = &g_array_index(token_stream, Token, index);
+
     switch (curToken->type)
     {
         case t_plus:
@@ -106,9 +107,6 @@ stmt * create_stmt(GArray * token_stream, unsigned long index, unsigned long * n
 
             // Both if and else use the same ifBlock parameter, as they should be defined in separate b_lists
         case t_if:
-            new_statement->ifBlock = create_if_node(token_stream, index, next);
-            break;
-        case t_else:
             new_statement->ifBlock = create_if_node(token_stream, index, next);
             break;
 
