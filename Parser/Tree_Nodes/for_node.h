@@ -2,11 +2,11 @@
 *
 * File Name: int_node.h
 *
-* Author: Reed Terdal
+* Author: Jameson Toper
 *
-* Created for CS344 on: 10/09/2019
+* Created for CS344 on: 11/09/2019
 *
-* Purpose: Header that provides access to functions for manipulating Int nodes.
+* Purpose: Header that provides access to functions for manipulating for nodes.
 *
 **************************************************************************************************/
 
@@ -18,32 +18,35 @@
 #include "asmt.h"
 
 /**
- * This struct represents a literal integer value as a leaf on the parse/syntax tree.
+ * This struct represents a for loop in the parse tree
  */
 typedef struct for_node {
     asmt *initialize;
     i_expr *conditional;
+    r_asmt *incrementer;
     b_stmt_list *body;
 } for_node;
 
 /**
- * @brief This function takes in a value token and optionally a sign token and converts them to an int_node.
- * @param value[IN] A token of the type t_int that contains a integer literal in string form.
- * @param sign[IN] An optional sign token to be applied to the literal value, must be (NULL, t_plus, or t_minus).
- * @return The new int_node
+ * @brief Creates an assignment from the token_stream starting at the given index and updates next to be the following
+ * token index.
+ * @param token_stream The stream of tokens for the entire program.
+ * @param index The index in the token stream to start building an assignment from.
+ * @param next[OUT] A pointer to the index of the next token not part of the assignment.
+ * @return A for loop held in a node
  */
 for_node *create_for_node(GArray *tokenStream, unsigned long index, unsigned long *next);
 
 /**
- * @brief This function creates a JSON formatted string that represents the int_node provided.
- * @param iNode The iNode to create a JSON string for.
+ * @brief This function creates a JSON formatted string that represents the for_node provided.
+ * @param for_node The for_node to create a JSON string for.
  * @return A JSON formatted string.
  */
-GString *for_node_to_json(for_node *forNode);
+GString *for_node_to_json(for_node *for_node);
 
 /**
- * @brief Destructor for int nodes, frees any associated memory.
- * @param iNode the int node to free allocated memory for.
+ * @brief Destructor for for nodes, frees any associated memory.
+ * @param for_node the for node to free allocated memory for.
  */
 void destroy_for_node(for_node *forNode);
 

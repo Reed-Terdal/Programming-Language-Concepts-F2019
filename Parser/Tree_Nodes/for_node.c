@@ -2,11 +2,11 @@
 *
 * File Name: for_node.c
 *
-* Author: Reed Terdal
+* Author: Jameson Toper
 *
-* Created for CS344 on: 10/09/2019
+* Created for CS344 on: 11/06/2019
 *
-* Purpose: code provides functions for manipulating int nodes.
+* Purpose: code provides functions for manipulating for nodes.
 *
 **************************************************************************************************/
 
@@ -15,73 +15,111 @@
 #include <stdio.h>
 #include "for_node.h"
 
-
-for_node *create_for_node(GArray *tokenStream, unsigned long index, unsigned long *next) {
-    for_node *new_for_node = calloc(1, sizeof(for_node));
-
-    // tokenStream[index] --> f_id
-    // tokenStream[index+1] --> open paren
-    // tokenStream[index+2 ... index+n] --> param comma
-    // tokenStream[index+n+1] close paren
-
-    Token *curToken = &g_array_index(tokenStream, Token, index);
-    fprintf(stdout, "%s", curToken);
-    if (curToken->type == t_id) {
-        Type id_type;
-        if (findIDType(curToken->data, &id_type)) {
-            switch (id_type) {
-                case jf_str:
-                case jf_void:
-                case jf_double:
-                case jf_int:
-                    new_for_node->initialize = create_id_node(curToken);
-                    (*next)++;
-                    curToken = &g_array_index(tokenStream, Token, index + 1);
-                    if (curToken->type == t_start_paren) {
-                        (*next)++;
-                    } else {
-                        fprintf(stderr, "Syntax Error: Unexpected Token at start of function call");
-                        exit(-1);
-                    }
-                    new_f_call->params = create_p_list(tokenStream, index + 2, next);
-
-
-                    curToken = &g_array_index(tokenStream, Token, *next);
-                    if (curToken->type == t_end_paren) {
-                        (*next)++;
-                    } else {
-                        fprintf(stderr, "Syntax Error: Unexpected Token at end of function call");
-                        exit(-1);
-                    }
-                    break;
-                default:
-                    fprintf(stderr, "Syntax Error: function call to non-function");
-            }
-        } else {
-            fprintf(stderr, "Syntax Error: called function has not been declared");
-        }
-    }
-
-}
-
-return
-retVal;
-}
-
-GString *for_node_to_json(for_node *forNode) {
-    GString *retVal = g_string_new(NULL);
-    if (forNode != NULL) {
-        g_string_printf(retVal, "{\"Initialize\": %ld}", forNode->initialize);
-        g_string_printf(retVal, "{\"Conditional\": %ld}", forNode->conditional);
-        g_string_printf(retVal, "{\"Body\": %ld}", forNode->body);
+for_node *create_for_node(GArray *token_stream, unsigned long index, unsigned long *next) {
+    for_node *retVal = NULL;
+    retVal = calloc(1, sizeof(for_node));
+    (*next)++;
+    Token *check = &g_array_index(token_stream, Token, *next);
+    if (check->type == t_start_paren) {
+        (*next)++;
     } else {
-        g_string_append(retVal, "null");
+        fprintf(stderr,
+                "Syntax Error: missing start parend in for loop");
+        exit(-1);
     }
+    // Grab first assignment
+    retVal->initialize = create_asmt(token_stream, *next, next);
+
+    // Grab the conditional statement next
+    retVal->conditional = create_i_expr(token_stream, *next, next);
+
+    //Check next char
+    check = &g_array_index(token_stream, Token, *next);
+    if (check->type == t_end_stmt) {
+        (*next)++;
+    } else {
+        fprintf(stderr,
+                "Syntax Error: missing second ; in for loop");
+        exit(-1);
+    }
+
+    // Grab the incrementer reassignment function
+    retVal->incrementer = create_r_asmt(token_stream, *next, next);
+
+    // Check next parend
+    check = &g_array_index(token_stream, Token, *next);
+    if (check->type == t_end_paren) {
+        (*next)++;
+    } else {
+        fprintf(stderr,
+                "Syntax Error: missing end parend on for loop");
+        exit(-1);
+    }
+
+    //Check for closing bracket
+    check = &g_array_index(token_stream, Token, *next);
+    if (check->type == t_start_bracket) {
+        (*next)++;
+    } else {
+        fprintf(stderr,
+                "Syntax Error: missing start bracket in for loop");
+        exit(-1);
+    }
+
+    // Make B_stmt_list for looping
+    retVal->body = create_b_stmt_list(token_stream, *next, next);
+
     return retVal;
 }
 
+GString *for_node_to_json(for_node *forNode) {
+    GString *retval = g_string_new(NULL);
+
+    if (retval != NULL) {
+        g_string_append(retval, "{\"Condition\": ");
+        if (forNode->conditional != NULL) {
+            GString *child = i_expr_to_json(forNode->conditional);
+            g_string_append(retval, child->str);
+            g_string_free(child, TRUE);
+        } else {
+            g_string_append(retval, "null");
+        }
+        g_string_append(retval, ", \"Incrementer\": ");
+        if (forNode->body != NULL) {
+            GString *child = r_asmt_to_json(forNode->incrementer);
+            g_string_append(retval, child->str);
+            g_string_free(child, TRUE);
+        } else {
+            g_string_append(retval, "null");
+        }
+        g_string_append(retval, ", \"Body\": ");
+        if (forNode->body != NULL) {
+            GString *child = b_stmt_list_to_json(forNode->body);
+            g_string_append(retval, child->str);
+            g_string_free(child, TRUE);
+        } else {
+            g_string_append(retval, "null");
+        }
+        g_string_append_c(retval, '}');
+    }
+    return retval;
+}
+
+
 void destroy_for_node(for_node *forNode) {
     if (forNode != NULL) {
+        if (forNode->conditional) {
+            free(forNode->conditional);
+        }
+        if (forNode->incrementer) {
+            free(forNode->incrementer);
+        }
+        if (forNode->initialize) {
+            free(forNode->initialize);
+        }
+        if (forNode->body) {
+            free(forNode->body);
+        }
         free(forNode);
     }
 }
