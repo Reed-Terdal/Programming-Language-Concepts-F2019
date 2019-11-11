@@ -99,7 +99,7 @@ GString * operator_to_json(operator_node * anOperator)
                 g_string_append(retval, "{\"Type\": \"<=\"}");
                 break;
             case op_eq:
-                g_string_append(retval, "{\"Type\": \"=\"}");
+                g_string_append(retval, "{\"Type\": \"==\"}");
                 break;
             case op_neq:
                 g_string_append(retval, "{\"Type\": \"!=\"}");
