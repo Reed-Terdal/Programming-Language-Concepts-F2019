@@ -183,7 +183,7 @@ i_expr * internal_i_expr_constructor(i_expr * parent, GArray * token_stream, uns
             curIndex++;
             curToken = &g_array_index(token_stream, Token, curIndex);
         }
-        if (curToken->type == t_end_paren || curToken->type == t_end_stmt || curToken->type == t_comma)
+        if (nextToken->type == t_end_paren || nextToken->type == t_end_stmt || nextToken->type == t_comma)
         {
             // We are done, return this expression
             (*next) = curIndex;
