@@ -32,6 +32,7 @@ b_stmt *create_b_stmt(GArray *token_stream, unsigned long index, unsigned long *
             new_statement->expression = create_expr(token_stream, index, next);
             (*next)++;
             break;
+
         case t_id: {
             // Could be function call or expression
             Type id_type;
@@ -39,7 +40,7 @@ b_stmt *create_b_stmt(GArray *token_stream, unsigned long index, unsigned long *
                 switch (id_type) {
                     case jf_void:
                         // Function call
-                        new_statement->function_call = create_f_call(token_stream, index, next);
+                        new_statement->functionCall = create_f_call(token_stream, index, next);
                         curToken = &g_array_index(token_stream, Token, *next);
                         if (curToken->type == t_end_stmt) {
                             (*next)++;
@@ -48,14 +49,12 @@ b_stmt *create_b_stmt(GArray *token_stream, unsigned long index, unsigned long *
                             exit(-1);
                         }
                         break;
-                    case jf_str:
-                    case jf_double:
-                    case jf_int:
+
                     case jint:
                     case jdouble:
                     case jstring:
                         // Expression
-                        new_statement->expression = create_expr(token_stream, index, next);
+                        new_statement->reassign = create_r_asmt(token_stream, index, next);
                         curToken = &g_array_index(token_stream, Token, *next);
                         if (curToken->type == t_end_stmt) {
                             (*next)++;
@@ -74,24 +73,20 @@ b_stmt *create_b_stmt(GArray *token_stream, unsigned long index, unsigned long *
             }
         }
             break;
-        case t_type_double:
-        case t_type_integer:
-        case t_type_string:
-            // 2. Ressignment
-            new_statement->reassign = create_re_asmt(token_stream, index, next);
+        case t_else:
             break;
-
+        case t_end_bracket:
+            break;
         default:
             // Unexpected token when creating Statement, not function call, assignment, or expression
-            fprintf(stderr, "Syntax Error: Unexpected Token when creating statement");
+            fprintf(stderr, "Syntax Error: Unexpected Token when creating b_statement %s", curToken->data->str);
             exit(-1);
     }
-
 
     return new_statement;
 }
 
-GString *stmt_to_json(b_stmt *statement) {
+GString *b_stmt_to_json(b_stmt *statement) {
     GString *retVal = g_string_new(NULL);
     if (statement != NULL) {
         g_string_append(retVal, "{\"Expression\": ");
@@ -104,8 +99,8 @@ GString *stmt_to_json(b_stmt *statement) {
         }
 
         g_string_append(retVal, ", \"Assignment\": ");
-        if (statement->assignment != NULL) {
-            GString *child = asmt_to_json(statement->assignment);
+        if (statement->reassign != NULL) {
+            GString *child = r_asmt_to_json(statement->reassign);
             g_string_append(retVal, child->str);
             g_string_free(child, TRUE);
         } else {
@@ -113,8 +108,8 @@ GString *stmt_to_json(b_stmt *statement) {
         }
 
         g_string_append(retVal, ", \"Function_Call\": ");
-        if (statement->function_call != NULL) {
-            GString *child = f_call_to_json(statement->function_call);
+        if (statement->functionCall != NULL) {
+            GString *child = f_call_to_json(statement->functionCall);
             g_string_append(retVal, child->str);
             g_string_free(child, TRUE);
         } else {
@@ -128,16 +123,16 @@ GString *stmt_to_json(b_stmt *statement) {
     return retVal;
 }
 
-void destroy_stmt(stmt *statement) {
+void destroy_b_stmt(b_stmt *statement) {
     if (statement != NULL) {
         if (statement->expression != NULL) {
             destroy_expr(statement->expression);
         }
-        if (statement->function_call != NULL) {
-            destroy_f_call(statement->function_call);
+        if (statement->functionCall != NULL) {
+            destroy_f_call(statement->functionCall);
         }
-        if (statement->assignment != NULL) {
-            destroy_asmt(statement->assignment);
+        if (statement->reassign != NULL) {
+            destroy_r_asmt(statement->reassign);
         }
         free(statement);
     }
