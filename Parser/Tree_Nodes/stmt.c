@@ -38,7 +38,6 @@ stmt * create_stmt(GArray * token_stream, unsigned long index, unsigned long * n
         {
             // Could be function call or expression
             Type id_type;
-            fprintf(stderr,"%s",curToken->data->str);
             if(findIDType(curToken->data, &id_type))
             {
                 switch (id_type)
@@ -53,7 +52,8 @@ stmt * create_stmt(GArray * token_stream, unsigned long index, unsigned long * n
                         }
                         else
                         {
-                            fprintf(stderr, "Syntax Error: Unexpected token at end of statement");
+                            fprintf(stderr, "Syntax Error: Unexpected token at end of statement %s",
+                                    curToken->data->str);
                             exit(-1);
                         }
                         break;
@@ -72,7 +72,8 @@ stmt * create_stmt(GArray * token_stream, unsigned long index, unsigned long * n
                         }
                         else
                         {
-                            fprintf(stderr, "Syntax Error: Unexpected token at end of statement");
+                            fprintf(stderr, "Syntax Error: Unexpected token at end of statement %s",
+                                    curToken->data->str);
                             exit(-1);
                         }
                         break;
@@ -114,7 +115,7 @@ stmt * create_stmt(GArray * token_stream, unsigned long index, unsigned long * n
 
         default:
             // Unexpected token when creating Statement, not function call, assignment, or expression
-            fprintf(stderr, "Syntax Error: Unexpected Token when creating statement");
+            fprintf(stderr, "Syntax Error: Unexpected Token when creating statement %s", curToken->data->str);
             exit(-1);
     }
 
@@ -162,6 +163,30 @@ GString * stmt_to_json(stmt * statement)
         {
             g_string_append(retVal, "null");
         }
+        g_string_append(retVal, ", \"For Loop\": ");
+        if (statement->forLoop != NULL) {
+            GString *child = for_node_to_json(statement->forLoop);
+            g_string_append(retVal, child->str);
+            g_string_free(child, TRUE);
+        } else {
+            g_string_append(retVal, "null");
+        }
+        g_string_append(retVal, ", \"While Loop\": ");
+        if (statement->whileLoop != NULL) {
+            GString *child = while_node_to_json(statement->whileLoop);
+            g_string_append(retVal, child->str);
+            g_string_free(child, TRUE);
+        } else {
+            g_string_append(retVal, "null");
+        }
+        g_string_append(retVal, ", \"If Statement\": ");
+        if (statement->ifBlock != NULL) {
+            GString *child = if_node_to_json(statement->ifBlock);
+            g_string_append(retVal, child->str);
+            g_string_free(child, TRUE);
+        } else {
+            g_string_append(retVal, "null");
+        }
 
         g_string_append_c(retVal, '}');
     }
@@ -187,6 +212,15 @@ void destroy_stmt(stmt * statement)
         if(statement->assignment != NULL)
         {
             destroy_asmt(statement->assignment);
+        }
+        if (statement->ifBlock != NULL) {
+            destroy_if_node(statement->ifBlock);
+        }
+        if (statement->whileLoop != NULL) {
+            destroy_while_node(statement->whileLoop);
+        }
+        if (statement->forLoop != NULL) {
+            destroy_for_node(statement->forLoop);
         }
         free(statement);
     }
