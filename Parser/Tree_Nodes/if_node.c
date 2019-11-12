@@ -12,6 +12,7 @@
 
 #include <stdio.h>
 #include "if_node.h"
+#include "b_stmt_list.h"
 
 
 if_node *create_if_node(GArray *token_stream, unsigned long index, unsigned long *next) {
@@ -49,20 +50,27 @@ if_node *create_if_node(GArray *token_stream, unsigned long index, unsigned long
 
     // Make B_stmt_list for true branch
     retVal->b_true = create_b_stmt_list(token_stream, *next, next);
+    if (*next < token_stream->len && g_array_index(token_stream, Token, (*next)).type == t_end_bracket) {
+        // Do we have an else branch?
+        check = &g_array_index(token_stream, Token, (*next) + 1);
+        if (check->type == t_else) {
+            (*next) += 2;
+            check = &g_array_index(token_stream, Token, *next);
+            printf("%s\n", g_array_index(token_stream, Token, (*next)).data->str);
+            if (check->type != t_start_bracket) {
+                fprintf(stderr,
+                        "Syntax Error: missing start bracket in else statement");
+                exit(-1);
+            }
+            (*next)++;
+            retVal->b_false = create_b_stmt_list(token_stream, *next, next);
 
-    // Do we have an else branch?
-    check = &g_array_index(token_stream, Token, *next);
-    if (check->type == t_else) {
-        (*next)++;
-        check = &g_array_index(token_stream, Token, *next);
-        if (check->type != t_start_bracket) {
-            fprintf(stderr,
-                    "Syntax Error: missing start bracket in else statement");
-            exit(-1);
+        } else {
+            return retVal;
         }
-        (*next)++;
-        retVal->b_false = create_b_stmt_list(token_stream, *next, next);
-
+    } else {
+        fprintf(stderr, "Syntax Error: Missing } at end of if statement");
+        exit(-1);
     }
     return retVal;
 }

@@ -14,6 +14,7 @@
 #define JOTT_INTERPRETTER_B_STMT_H
 
 #include "r_asmt.h"
+#include "if_node.h"
 
 /**
  * Represents a statement, can be in one of 3 configurations:
@@ -25,6 +26,7 @@ typedef struct b_stmt {
     r_asmt *reassign;
     f_call *functionCall;
     expr *expression;
+    if_node *ifBlock;
 } b_stmt;
 
 

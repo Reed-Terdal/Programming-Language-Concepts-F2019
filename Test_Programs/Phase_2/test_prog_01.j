@@ -24,7 +24,16 @@ print(x);
 
 while(x > 0)
 {
-
+    if(x / 2)
+    {
+        print("x is even ");
+        print(x);
+    }
+    else
+    {
+        print("x is odd ");
+        print(x);
+    }
     x = x - 1;
 }
 

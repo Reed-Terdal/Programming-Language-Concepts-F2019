@@ -100,15 +100,38 @@ stmt * create_stmt(GArray * token_stream, unsigned long index, unsigned long * n
             // Conditional/loops
         case t_for:
             new_statement->forLoop = create_for_node(token_stream, index, next);
+            curToken = &g_array_index(token_stream, Token, *next);
+            if (curToken->type == t_end_bracket) {
+                (*next)++;
+                break;
+            } else {
+                fprintf(stderr, "Syntax Error: Missing } at end of for loop");
+                exit(-1);
+            }
             break;
         case t_while:
             new_statement->whileLoop = create_while_node(token_stream, index, next);
+            curToken = &g_array_index(token_stream, Token, *next);
+            if (curToken->type == t_end_bracket) {
+                (*next)++;
+                break;
+            } else {
+                fprintf(stderr, "Syntax Error: Missing } at end of while loop");
+                exit(-1);
+            }
             break;
-
             // Both if and else use the same ifBlock parameter, as they should be defined in separate b_lists
         case t_if:
             new_statement->ifBlock = create_if_node(token_stream, index, next);
-            break;
+            curToken = &g_array_index(token_stream, Token, *next);
+            if (curToken->type == t_end_bracket) {
+                (*next)++;
+                break;
+            } else {
+                fprintf(stderr, "Syntax Error: Missing } at end of if statement");
+                exit(-1);
+            }
+
 
 
         default:

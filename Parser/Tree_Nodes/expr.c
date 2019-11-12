@@ -16,7 +16,6 @@
 expr * create_expr(GArray * token_stream, unsigned long index, unsigned long * next)
 {
     expr * new_expr = calloc(1, sizeof(expr));
-
     Token * first = &g_array_index(token_stream, Token, index);
     if(first->type == t_minus || first->type == t_plus)
     {
@@ -24,7 +23,6 @@ expr * create_expr(GArray * token_stream, unsigned long index, unsigned long * n
     }
 
     Type exprType;
-
     switch (first->type)
     {
         case t_id:
@@ -47,7 +45,7 @@ expr * create_expr(GArray * token_stream, unsigned long index, unsigned long * n
             break;
         default:
             // Unexpected Token when building expression
-            fprintf(stderr, "Syntax Error: Unexpected token when building expression");
+            fprintf(stderr, "Syntax Error: Unexpected token when building expression %s", first->data->str);
             exit(-1);
     }
 

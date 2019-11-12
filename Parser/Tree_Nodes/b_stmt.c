@@ -15,6 +15,7 @@
 
 b_stmt *create_b_stmt(GArray *token_stream, unsigned long index, unsigned long *next) {
     b_stmt *new_statement = calloc(1, sizeof(b_stmt));
+    printf("%s\n", g_array_index(token_stream, Token, (*next)).data->str);
 
     // We need to determine the statement type
     // 1. Reassignment
@@ -56,6 +57,7 @@ b_stmt *create_b_stmt(GArray *token_stream, unsigned long index, unsigned long *
                         // Expression
                         new_statement->reassign = create_r_asmt(token_stream, index, next);
                         curToken = &g_array_index(token_stream, Token, *next);
+
                         if (curToken->type == t_end_stmt) {
                             (*next)++;
                         } else {
@@ -73,10 +75,18 @@ b_stmt *create_b_stmt(GArray *token_stream, unsigned long index, unsigned long *
             }
         }
             break;
-        case t_else:
-            break;
         case t_end_bracket:
             break;
+        case t_if:
+            new_statement->ifBlock = create_if_node(token_stream, index, next);
+            curToken = &g_array_index(token_stream, Token, *next);
+            if (curToken->type == t_end_bracket) {
+                (*next)++;
+                break;
+            } else {
+                fprintf(stderr, "Syntax Error: Missing } at end of if statement");
+                exit(-1);
+            }
         default:
             // Unexpected token when creating Statement, not function call, assignment, or expression
             fprintf(stderr, "Syntax Error: Unexpected Token when creating b_statement %s", curToken->data->str);
@@ -107,7 +117,7 @@ GString *b_stmt_to_json(b_stmt *statement) {
             g_string_append(retVal, "null");
         }
 
-        g_string_append(retVal, ", \"Function_Call\": ");
+        g_string_append(retVal, ", \"Function Call\": ");
         if (statement->functionCall != NULL) {
             GString *child = f_call_to_json(statement->functionCall);
             g_string_append(retVal, child->str);
@@ -115,7 +125,14 @@ GString *b_stmt_to_json(b_stmt *statement) {
         } else {
             g_string_append(retVal, "null");
         }
-
+        g_string_append(retVal, ", \"If Statement\": ");
+        if (statement->ifBlock != NULL) {
+            GString *child = if_node_to_json(statement->ifBlock);
+            g_string_append(retVal, child->str);
+            g_string_free(child, TRUE);
+        } else {
+            g_string_append(retVal, "null");
+        }
         g_string_append_c(retVal, '}');
     } else {
         g_string_append(retVal, "null");
@@ -133,6 +150,9 @@ void destroy_b_stmt(b_stmt *statement) {
         }
         if (statement->reassign != NULL) {
             destroy_r_asmt(statement->reassign);
+        }
+        if (statement->ifBlock != NULL) {
+            destroy_if_node(statement->ifBlock);
         }
         free(statement);
     }
