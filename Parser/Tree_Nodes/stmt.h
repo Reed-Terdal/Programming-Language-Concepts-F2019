@@ -30,7 +30,9 @@ typedef struct stmt
     asmt * assignment;
     r_asmt *re_asmt;
     expr * expression;
-    b_stmt_list *bStmtList;
+    while_node *whileNode;
+    for_node *forNode;
+    if_node *ifNode;
 } stmt;
 
 

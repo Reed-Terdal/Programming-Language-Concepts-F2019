@@ -16,20 +16,72 @@
 #include "for_node.h"
 #include "b_stmt_list.h"
 
-for_node *create_for_node(asmt *initalizer, i_expr *conditional, r_asmt *incrementer, struct b_stmt_list *body) {
+
+for_node *create_for_node(GArray *token_stream, unsigned long index, unsigned long *next) {
     for_node *retVal = NULL;
+
+    // Make new for node
     retVal = calloc(1, sizeof(for_node));
-    retVal->initialize = initalizer;
-    retVal->conditional = conditional;
-    retVal->incrementer = incrementer;
-    retVal->body = body;
-    return retVal;
+    (*next)++;
+    Token *check = &g_array_index(token_stream, Token, *next);
+    if (check->type == t_start_paren) {
+        (*next)++;
+    } else {
+        fprintf(stderr,
+                "Syntax Error: missing start parend in for loop");
+        exit(-1);
+    }
+    // Grab first assignment
+    retVal->initialize = create_asmt(token_stream, *next, next);
+    // Grab the conditional statement next
+    retVal->conditional = create_i_expr(token_stream, *next, next);
+    //Check next char
+    check = &g_array_index(token_stream, Token, *next);
+    if (check->type == t_end_stmt) {
+        (*next)++;
+    } else {
+        fprintf(stderr,
+                "Syntax Error: missing second ; in for loop");
+        exit(-1);
+    }
+
+    // Grab the incrementer reassignment function
+    retVal->incrementer = create_r_asmt(token_stream, *next, next);
+
+    // Check next parend
+    check = &g_array_index(token_stream, Token, *next);
+    if (check->type == t_end_paren) {
+        (*next)++;
+    } else {
+        fprintf(stderr,
+                "Syntax Error: missing end parend on for loop");
+        exit(-1);
+    }
+
+    //Check for closing bracket
+    check = &g_array_index(token_stream, Token, *next);
+    if (check->type == t_start_bracket) {
+        (*next)++;
+    } else {
+        fprintf(stderr,
+                "Syntax Error: missing start bracket in for loop");
+        exit(-1);
+    }
+    retVal->body = create_b_stmt_list(token_stream, *next, next);
+    check = &g_array_index(token_stream, Token, (*next));
+    if (check->type == t_end_bracket) {
+        (*next)++;
+        return retVal;
+    } else {
+        fprintf(stderr, "Syntax Error: Missing } at end of for statement");
+        exit(-1);
+    }
 }
 
 GString *for_node_to_json(for_node *forNode) {
     GString *retval = g_string_new(NULL);
 
-    if (retval != NULL) {
+    if (forNode != NULL) {
         g_string_append(retval, "{\"Condition\": ");
         if (forNode->conditional != NULL) {
             GString *child = i_expr_to_json(forNode->conditional);

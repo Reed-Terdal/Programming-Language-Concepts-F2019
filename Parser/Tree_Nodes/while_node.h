@@ -29,7 +29,7 @@ typedef struct while_node {
  * @param sign[IN] A statement list to run while the condition is true
  * @return The new while_node
  */
-while_node *create_while_node(i_expr *conditional, struct b_stmt_list *body);
+while_node *create_while_node(GArray *token_stream, unsigned long index, unsigned long *next);
 /**
  * @brief This function creates a JSON formatted string that represents the while_node provided.
  * @param whileNode The whileNode to create a JSON string for.

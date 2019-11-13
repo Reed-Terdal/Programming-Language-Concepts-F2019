@@ -34,7 +34,7 @@ typedef struct if_node {
  * @param expression[IN] An expression to evaluate and decide the path to take
  * @return The new if_node.
  */
-if_node *create_if_node(i_expr *conditional, struct b_stmt_list *true_branch, struct b_stmt_list *false_branch);
+if_node *create_if_node(GArray *token_stream, unsigned long index, unsigned long *next);
 
 /**
  * @brief This function creates a JSON representation of the provided if_node.

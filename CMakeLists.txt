@@ -8,12 +8,12 @@ add_executable(jott
         Parser/parser.c
         Parser/parser.h
         Parser/Token.h
-        Parser/Tree_Nodes/Parse_Nodes/while_node.c
-        Parser/Tree_Nodes/Parse_Nodes/while_node.h
-        Parser/Tree_Nodes/Parse_Nodes/for_node.c
-        Parser/Tree_Nodes/Parse_Nodes/for_node.h
-        Parser/Tree_Nodes/Parse_Nodes/if_node.c
-        Parser/Tree_Nodes/Parse_Nodes/if_node.h
+        Parser/Tree_Nodes/while_node.c
+        Parser/Tree_Nodes/while_node.h
+        Parser/Tree_Nodes/for_node.c
+        Parser/Tree_Nodes/for_node.h
+        Parser/Tree_Nodes/if_node.c
+        Parser/Tree_Nodes/if_node.h
         Parser/Tree_Nodes/program.c
         Parser/Tree_Nodes/program.h
         Parser/Tree_Nodes/stmt_list.c

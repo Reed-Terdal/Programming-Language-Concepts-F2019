@@ -37,7 +37,7 @@ typedef struct for_node {
  * @param next[OUT] A pointer to the index of the next token not part of the assignment.
  * @return A for loop held in a node
  */
-for_node *create_for_node(asmt *initalizer, i_expr *conditional, r_asmt *incrementer, struct b_stmt_list *body);
+for_node *create_for_node(GArray *token_stream, unsigned long index, unsigned long *next);
 /**
  * @brief This function creates a JSON formatted string that represents the for_node provided.
  * @param for_node The for_node to create a JSON string for.

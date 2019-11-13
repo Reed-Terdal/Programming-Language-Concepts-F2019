@@ -63,14 +63,9 @@ stmt * create_stmt(GArray * token_stream, unsigned long index, unsigned long * n
                     case jint:
                     case jdouble:
                     case jstring:
-                        // Expression
-                        curToken = &g_array_index(token_stream, Token, *next);
-                        Type t;
-                        if (findIDType(curToken->data, &t)) {
-                            new_statement->re_asmt = create_r_asmt(token_stream, index, next);
-                        } else {
-                            new_statement->expression = create_expr(token_stream, index, next);
-                        }
+                        // Reassignment, since ID was the first thing. Thats always x = ...., x is the first token
+                        new_statement->re_asmt = create_r_asmt(token_stream, index, next);
+
                         curToken = &g_array_index(token_stream, Token, *next);
                         if(curToken->type == t_end_stmt)
                         {
@@ -104,9 +99,13 @@ stmt * create_stmt(GArray * token_stream, unsigned long index, unsigned long * n
 
             // Conditional/loops
         case t_while:
+            new_statement->whileNode = create_while_node(token_stream, index, next);
+            break;
         case t_if:
+            new_statement->ifNode = create_if_node(token_stream, index, next);
+            break;
         case t_for:
-            new_statement->bStmtList = create_b_stmt_list(token_stream, index, next);
+            new_statement->forNode = create_for_node(token_stream, index, next);
             break;
         default:
             // Unexpected token when creating Statement, not function call, assignment, or expression
@@ -168,8 +167,24 @@ GString * stmt_to_json(stmt * statement)
             g_string_append(retVal, "null");
         }
         g_string_append(retVal, ", \"For Loop\": ");
-        if (statement->bStmtList != NULL) {
-            GString *child = b_stmt_list_to_json(statement->bStmtList);
+        if (statement->forNode != NULL) {
+            GString *child = for_node_to_json(statement->forNode);
+            g_string_append(retVal, child->str);
+            g_string_free(child, TRUE);
+        } else {
+            g_string_append(retVal, "null");
+        }
+        g_string_append(retVal, ", \"While Loop\": ");
+        if (statement->whileNode != NULL) {
+            GString *child = while_node_to_json(statement->whileNode);
+            g_string_append(retVal, child->str);
+            g_string_free(child, TRUE);
+        } else {
+            g_string_append(retVal, "null");
+        }
+        g_string_append(retVal, ", \"If Statement\": ");
+        if (statement->ifNode != NULL) {
+            GString *child = if_node_to_json(statement->ifNode);
             g_string_append(retVal, child->str);
             g_string_free(child, TRUE);
         } else {
@@ -204,8 +219,14 @@ void destroy_stmt(stmt * statement)
         if (statement->re_asmt != NULL) {
             destroy_r_asmt(statement->re_asmt);
         }
-        if (statement->bStmtList != NULL) {
-            destroy_b_stmt_list(statement->bStmtList);
+        if (statement->ifNode != NULL) {
+            destroy_if_node(statement->ifNode);
+        }
+        if (statement->forNode != NULL) {
+            destroy_for_node(statement->forNode);
+        }
+        if (statement->whileNode != NULL) {
+            destroy_while_node(statement->whileNode);
         }
         free(statement);
     }
