@@ -268,7 +268,7 @@ GString *b_stmt_to_json(b_stmt *statement) {
             g_string_append(retVal, "null");
         }
 
-        g_string_append(retVal, ", \"Assignment\": ");
+        g_string_append(retVal, ", \"Re-assignment\": ");
         if (statement->reassign != NULL) {
             GString *child = r_asmt_to_json(statement->reassign);
             g_string_append(retVal, child->str);

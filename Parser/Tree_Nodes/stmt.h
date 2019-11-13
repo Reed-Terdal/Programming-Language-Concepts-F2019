@@ -28,6 +28,7 @@ typedef struct stmt
 {
     f_call * function_call;
     asmt * assignment;
+    r_asmt *re_asmt;
     expr * expression;
     b_stmt_list *bStmtList;
 } stmt;

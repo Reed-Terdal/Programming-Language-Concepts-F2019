@@ -69,6 +69,7 @@ expr * create_expr(GArray * token_stream, unsigned long index, unsigned long * n
             new_expr->string_expression = create_s_expr(token_stream, index, next);
         }
             break;
+
         default:
             // This means we have a INVALID type or void function call as part of an expression.
             fprintf(stderr, "Syntax Error: mismatch types in expression");

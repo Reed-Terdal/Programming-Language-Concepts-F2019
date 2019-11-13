@@ -64,7 +64,13 @@ stmt * create_stmt(GArray * token_stream, unsigned long index, unsigned long * n
                     case jdouble:
                     case jstring:
                         // Expression
-                        new_statement->expression = create_expr(token_stream, index, next);
+                        curToken = &g_array_index(token_stream, Token, *next);
+                        Type t;
+                        if (findIDType(curToken->data, &t)) {
+                            new_statement->re_asmt = create_r_asmt(token_stream, index, next);
+                        } else {
+                            new_statement->expression = create_expr(token_stream, index, next);
+                        }
                         curToken = &g_array_index(token_stream, Token, *next);
                         if(curToken->type == t_end_stmt)
                         {
@@ -141,6 +147,15 @@ GString * stmt_to_json(stmt * statement)
             g_string_append(retVal, "null");
         }
 
+        g_string_append(retVal, ", \"Re-Assignment\": ");
+        if (statement->re_asmt != NULL) {
+            GString *child = r_asmt_to_json(statement->re_asmt);
+            g_string_append(retVal, child->str);
+            g_string_free(child, TRUE);
+        } else {
+            g_string_append(retVal, "null");
+        }
+
         g_string_append(retVal, ", \"Function_Call\": ");
         if(statement->function_call != NULL)
         {
@@ -185,6 +200,9 @@ void destroy_stmt(stmt * statement)
         if(statement->assignment != NULL)
         {
             destroy_asmt(statement->assignment);
+        }
+        if (statement->re_asmt != NULL) {
+            destroy_r_asmt(statement->re_asmt);
         }
         if (statement->bStmtList != NULL) {
             destroy_b_stmt_list(statement->bStmtList);
