@@ -26,11 +26,19 @@ while(x > 0)
 {
     if(x / 2)
     {
+         if(x == 4)
+         {
+             print("x is 4 now");
+         }
         print("x is even ");
         print(x);
     }
     else
     {
+        if(x == 5)
+        {
+             print("x is 5 now");
+        }
         print("x is odd ");
         print(x);
     }

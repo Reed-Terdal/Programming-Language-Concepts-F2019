@@ -14,6 +14,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include "while_node.h"
+#include "b_stmt_list.h"
 
 /**
  * Creates a new while node from the given token stream
@@ -22,52 +23,13 @@
  * @param next - Lookahead pointer
  * @return new While node with a i_expr conditional and b_stmt_list
  */
-while_node *create_while_node(GArray *token_stream, unsigned long index, unsigned long *next) {
+while_node *create_while_node(i_expr *conditional, b_stmt_list *body) {
     while_node *retVal = NULL;
 
     // Make new While node
     retVal = calloc(1, sizeof(while_node));
-    (*next)++;
-
-    // Load next token
-    Token *check = &g_array_index(token_stream, Token, *next);
-
-    //Is it a parend
-    if (check->type == t_start_paren) {
-        (*next)++;
-    } else {
-        fprintf(stderr,
-                "Syntax Error: missing start parend in while statement");
-        exit(-1);
-    }
-
-    // Grab expression to evaluate
-    retVal->conditional = create_i_expr(token_stream, *next, next);
-
-    check = &g_array_index(token_stream, Token, *next);
-
-    // Is there an end parend and starting bracket for b_stmt?
-    if (check->type == t_end_paren) {
-        (*next)++;
-        check = &g_array_index(token_stream, Token, *next);
-    } else {
-        fprintf(stderr,
-                "Syntax Error: missing end parend in while statement");
-        exit(-1);
-    }
-
-    // Is there an opening bracket
-    if (check->type == t_start_bracket) {
-        (*next)++;
-    } else {
-        fprintf(stderr,
-                "Syntax Error: missing start bracket in while statement");
-        exit(-1);
-    }
-
-    // Make B_stmt_list for body
-    retVal->body = create_b_stmt_list(token_stream, *next, next);
-
+    retVal->body = body;
+    retVal->conditional = conditional;
     //Return the value
     return retVal;
 }

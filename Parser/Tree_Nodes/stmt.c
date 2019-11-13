@@ -23,7 +23,6 @@ stmt * create_stmt(GArray * token_stream, unsigned long index, unsigned long * n
     // 3. Expression
 
     Token * curToken = &g_array_index(token_stream, Token, index);
-
     switch (curToken->type)
     {
         case t_plus:
@@ -98,42 +97,11 @@ stmt * create_stmt(GArray * token_stream, unsigned long index, unsigned long * n
             break;
 
             // Conditional/loops
-        case t_for:
-            new_statement->forLoop = create_for_node(token_stream, index, next);
-            curToken = &g_array_index(token_stream, Token, *next);
-            if (curToken->type == t_end_bracket) {
-                (*next)++;
-                break;
-            } else {
-                fprintf(stderr, "Syntax Error: Missing } at end of for loop");
-                exit(-1);
-            }
-            break;
         case t_while:
-            new_statement->whileLoop = create_while_node(token_stream, index, next);
-            curToken = &g_array_index(token_stream, Token, *next);
-            if (curToken->type == t_end_bracket) {
-                (*next)++;
-                break;
-            } else {
-                fprintf(stderr, "Syntax Error: Missing } at end of while loop");
-                exit(-1);
-            }
-            break;
-            // Both if and else use the same ifBlock parameter, as they should be defined in separate b_lists
         case t_if:
-            new_statement->ifBlock = create_if_node(token_stream, index, next);
-            curToken = &g_array_index(token_stream, Token, *next);
-            if (curToken->type == t_end_bracket) {
-                (*next)++;
-                break;
-            } else {
-                fprintf(stderr, "Syntax Error: Missing } at end of if statement");
-                exit(-1);
-            }
-
-
-
+        case t_for:
+            new_statement->bStmtList = create_b_stmt_list(token_stream, index, next);
+            break;
         default:
             // Unexpected token when creating Statement, not function call, assignment, or expression
             fprintf(stderr, "Syntax Error: Unexpected Token when creating statement %s", curToken->data->str);
@@ -185,24 +153,8 @@ GString * stmt_to_json(stmt * statement)
             g_string_append(retVal, "null");
         }
         g_string_append(retVal, ", \"For Loop\": ");
-        if (statement->forLoop != NULL) {
-            GString *child = for_node_to_json(statement->forLoop);
-            g_string_append(retVal, child->str);
-            g_string_free(child, TRUE);
-        } else {
-            g_string_append(retVal, "null");
-        }
-        g_string_append(retVal, ", \"While Loop\": ");
-        if (statement->whileLoop != NULL) {
-            GString *child = while_node_to_json(statement->whileLoop);
-            g_string_append(retVal, child->str);
-            g_string_free(child, TRUE);
-        } else {
-            g_string_append(retVal, "null");
-        }
-        g_string_append(retVal, ", \"If Statement\": ");
-        if (statement->ifBlock != NULL) {
-            GString *child = if_node_to_json(statement->ifBlock);
+        if (statement->bStmtList != NULL) {
+            GString *child = b_stmt_list_to_json(statement->bStmtList);
             g_string_append(retVal, child->str);
             g_string_free(child, TRUE);
         } else {
@@ -234,14 +186,8 @@ void destroy_stmt(stmt * statement)
         {
             destroy_asmt(statement->assignment);
         }
-        if (statement->ifBlock != NULL) {
-            destroy_if_node(statement->ifBlock);
-        }
-        if (statement->whileLoop != NULL) {
-            destroy_while_node(statement->whileLoop);
-        }
-        if (statement->forLoop != NULL) {
-            destroy_for_node(statement->forLoop);
+        if (statement->bStmtList != NULL) {
+            destroy_b_stmt_list(statement->bStmtList);
         }
         free(statement);
     }

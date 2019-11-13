@@ -48,6 +48,18 @@ gboolean findIDType(GString *id, Type *ret_type)
     return FALSE;
 }
 
+gboolean matchType(GString *id, Type *ret_type) {
+    if (id_to_type == NULL) {
+        return FALSE;
+    }
+
+    gpointer ret_val = g_hash_table_lookup(id_to_type, id->str);
+    if (ret_val != NULL) {
+        return ret_type == (Type *) ret_val;
+    }
+    return FALSE;
+}
+
 /**
  * @brief This function is responsible for doing the initialization for the type table.
  * This involves allocating the hash table and adding in all natively bound functions.

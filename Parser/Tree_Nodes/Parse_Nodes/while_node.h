@@ -14,7 +14,7 @@
 #define JOTT_INTERPRETTER_WHILE_NODE_H
 
 #include "Token.h"
-#include "b_stmt_list.h"
+#include "i_expr.h"
 
 /**
  * This struct represents a while loop as a leaf on the parse/syntax tree.
@@ -29,8 +29,7 @@ typedef struct while_node {
  * @param sign[IN] A statement list to run while the condition is true
  * @return The new while_node
  */
-while_node *create_while_node(GArray *tokenStream, unsigned long index, unsigned long *next);
-
+while_node *create_while_node(i_expr *conditional, struct b_stmt_list *body);
 /**
  * @brief This function creates a JSON formatted string that represents the while_node provided.
  * @param whileNode The whileNode to create a JSON string for.

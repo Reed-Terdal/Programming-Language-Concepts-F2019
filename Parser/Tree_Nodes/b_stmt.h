@@ -14,6 +14,8 @@
 #define JOTT_INTERPRETTER_B_STMT_H
 
 #include "r_asmt.h"
+#include "for_node.h"
+#include "while_node.h"
 #include "if_node.h"
 
 /**
@@ -25,8 +27,10 @@
 typedef struct b_stmt {
     r_asmt *reassign;
     f_call *functionCall;
-    expr *expression;
     if_node *ifBlock;
+    for_node *forLoop;
+    while_node *whileLoop;
+    expr *expression;
 } b_stmt;
 
 

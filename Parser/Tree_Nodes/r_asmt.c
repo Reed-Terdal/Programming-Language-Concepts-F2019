@@ -26,6 +26,7 @@ r_asmt *create_r_asmt(GArray *tokenStream, unsigned long index, unsigned long *n
 
     // Need to try expression before we add the ID, because it cannot be self-referencing
     new_asmt->expression = create_expr(tokenStream, index + 2, next);
+
     Type *varType = malloc(sizeof(Type));
 
     // Get the variable in the reassignment

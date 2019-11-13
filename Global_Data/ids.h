@@ -58,6 +58,13 @@ gboolean addIDtoTable(GString * ID, Type type);
 gboolean findIDType(GString * ID, Type * type);
 
 /**
+ * Does the existing variable match the given type
+ * @param id ID of variable to check
+ * @param type  Type to compare to
+ * @return
+ */
+gboolean matchType(GString *id, Type *type);
+/**
  * @brief This function updates the value of a runtime variable in the global scope.
  * @param id The ID to set the value for.
  * @param value The value to set for the ID.
