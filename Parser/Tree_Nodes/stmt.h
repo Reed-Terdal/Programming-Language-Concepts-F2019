@@ -17,6 +17,9 @@
 #include "asmt.h"
 #include "expr.h"
 #include <glib.h>
+#include "if_node.h"
+#include "for_node.h"
+#include "while_node.h"
 
 /**
  * Represents a statement, can be in one of 3 configurations:
@@ -29,6 +32,9 @@ typedef struct stmt
     f_call * function_call;
     asmt * assignment;
     expr * expression;
+    if_node * ifBlock;
+    for_node * forLoop;
+    while_node * whileLoop;
 }stmt;
 
 
