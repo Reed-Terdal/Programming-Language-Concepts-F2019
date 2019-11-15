@@ -17,6 +17,19 @@
 #include <stdio.h>
 #include <Errors.h>
 
+
+typedef struct string_meta string_meta;
+
+string_meta *evaluate_string_expression(s_expr *sExpr);
+
+void *evaluate_function(f_call *fCall);
+
+void *evaluate_expression(expr *expression);
+
+gdouble evaluate_double_expression(d_expr *dExpr);
+
+gint64 evaluate_int_expression(i_expr *iExpr);
+
 /**
  * @details This helps to keep track of "temporary" strings, such as printing out the result of a concat or charAt,
  * this are not assigned at any point and are thrown out after evaluation.
@@ -29,20 +42,12 @@ typedef struct string_meta
 }string_meta;
 
 
-void execute(stmt_list *parse_tree) {
-    for (stmt_list *current = parse_tree; current != NULL; current = current->statement_list)
+void execute(program *parse_tree) {
+    for (stmt_list *current = parse_tree->statement_list; current != NULL; current = current->statement_list)
     {
         if(current->statement != NULL)
         {
-            if (current->statement->forNode != NULL) {
-                run_for_loop(current->statement->forNode);
-            } else if (current->statement->whileNode != NULL) {
-                run_while_loop(current->statement->whileNode);
-            } else if (current->statement->ifNode != NULL) {
-                run_if_block(current->statement->ifNode);
-            } else if (current->statement->re_asmt != NULL) {
-                evaluate_re_assignment(current->statement->re_asmt);
-            } else if (current->statement->expression != NULL)
+            if (current->statement->expression != NULL)
             {
                 void * retval = evaluate_expression(current->statement->expression);
                 if(retval != NULL)
@@ -56,7 +61,13 @@ void execute(stmt_list *parse_tree) {
             }
             else if(current->statement->assignment != NULL)
             {
-                evaluate_assignment(current->statement->assignment);
+                void *retval = evaluate_expression(current->statement->assignment->expression);
+                if (current->statement->assignment->id->type == jstring) {
+                    setGlobalVariable(current->statement->assignment->id->id, ((string_meta *) retval)->data);
+                    free(retval);
+                } else {
+                    setGlobalVariable(current->statement->assignment->id->id, retval);
+                }
             }
             else if(current->statement->function_call != NULL)
             {
@@ -73,16 +84,6 @@ void execute(stmt_list *parse_tree) {
         }
     }
     destroyGlobalScope();
-}
-
-void *evaluate_assignment(asmt *asmt) {
-    void *retval = evaluate_expression(asmt->expression);
-    if (asmt->id->type == jstring) {
-        setGlobalVariable(asmt->id->id, ((string_meta *) retval)->data);
-        free(retval);
-    } else {
-        setGlobalVariable(asmt->id->id, retval);
-    }
 }
 
 /**
@@ -215,7 +216,6 @@ gint64 evaluate_int_expression(i_expr * iExpr)
         }
         else if(iExpr->LHS_expr != NULL && iExpr->operatorNode != NULL && iExpr->RHS_expr != NULL)
         {
-            // Integer comparisons
             gint64 lhs = evaluate_int_expression(iExpr->LHS_expr);
             gint64 rhs = evaluate_int_expression(iExpr->RHS_expr);
             switch (iExpr->operatorNode->opType)
@@ -234,124 +234,6 @@ gint64 evaluate_int_expression(i_expr * iExpr)
                         divide_by_zero_int_error(iExpr->LHS_expr, iExpr->RHS_expr);
                     }
                     break;
-                case op_greater:
-                    return lhs > rhs;
-                case op_less:
-                    return lhs < rhs;
-                case op_goe:
-                    return lhs >= rhs;
-                case op_loe:
-                    return lhs <= rhs;
-                case op_neq:
-                    return lhs != rhs;
-                case op_eq:
-                    return lhs == rhs;
-            }
-        } else if (iExpr->operatorNode != NULL) {
-
-            // String comparisons
-            if (iExpr->LHS_s_expr != NULL && iExpr->RHS_s_expr != NULL) {
-                string_meta *lhs = evaluate_string_expression(iExpr->LHS_s_expr);
-                string_meta *rhs = evaluate_string_expression(iExpr->RHS_s_expr);
-                switch (iExpr->operatorNode->opType) {
-                    case op_greater: {
-                        int max = lhs->data->len;
-                        if (lhs->data->len != rhs->data->len) {
-                            return 0;
-                        }
-                        while (max > 0) {
-                            if ((char) lhs->data->str[max] <= (char) rhs->data->str[max]) {
-                                return 0;
-                            }
-                            max--;
-                        }
-                        return 1;
-                    }
-                    case op_less: {
-                        int max = lhs->data->len;
-                        if (lhs->data->len != rhs->data->len) {
-                            return 0;
-                        }
-                        while (max > 0) {
-                            if ((char) lhs->data->str[max] >= (char) rhs->data->str[max]) {
-                                return 0;
-                            }
-                            max--;
-                        }
-                        return 1;
-                    }
-                    case op_goe: {
-                        int max = lhs->data->len;
-                        if (lhs->data->len != rhs->data->len) {
-                            return 0;
-                        }
-                        while (max > 0) {
-                            if ((char) lhs->data->str[max] < (char) rhs->data->str[max]) {
-                                return 0;
-                            }
-                            max--;
-                        }
-                        return 1;
-                    }
-                    case op_loe: {
-                        int max = lhs->data->len;
-                        if (lhs->data->len != rhs->data->len) {
-                            return 0;
-                        }
-                        while (max > 0) {
-                            if ((char) lhs->data->str[max] > (char) rhs->data->str[max]) {
-                                return 0;
-                            }
-                            max--;
-                        }
-                        return 1;
-                    }
-                    case op_neq: {
-                        int max = lhs->data->len;
-                        if (lhs->data->len != rhs->data->len) {
-                            return 0;
-                        }
-                        while (max > 0) {
-                            if ((char) lhs->data->str[max] == (char) rhs->data->str[max]) {
-                                return 0;
-                            }
-                            max--;
-                        }
-                        return 1;
-                    }
-                    case op_eq: {
-                        int max = lhs->data->len;
-                        if (lhs->data->len != rhs->data->len) {
-                            return 0;
-                        }
-                        while (max > 0) {
-                            if ((char) lhs->data->str[max] != (char) rhs->data->str[max]) {
-                                return 0;
-                            }
-                            max--;
-                        }
-                        return 1;
-                    }
-                }
-            }
-        }
-        // Double comparisons
-        if (iExpr->LHS_d_expr != NULL && iExpr->RHS_d_expr != NULL) {
-            gdouble lhs = evaluate_double_expression(iExpr->LHS_d_expr);
-            gdouble rhs = evaluate_double_expression(iExpr->RHS_d_expr);
-            switch (iExpr->operatorNode->opType) {
-                case op_greater:
-                    return lhs > rhs;
-                case op_less:
-                    return lhs < rhs;
-                case op_goe:
-                    return lhs >= rhs;
-                case op_loe:
-                    return lhs <= rhs;
-                case op_neq:
-                    return lhs != rhs;
-                case op_eq:
-                    return lhs == rhs;
             }
         }
     }
@@ -422,7 +304,6 @@ gdouble evaluate_double_expression(d_expr * dExpr)
                 return *retval;
             }
         }
-
         else if(dExpr->LHS_expr != NULL && dExpr->operator != NULL && dExpr->RHS_expr != NULL)
         {
             gdouble lhs = evaluate_double_expression(dExpr->LHS_expr);
@@ -447,18 +328,6 @@ gdouble evaluate_double_expression(d_expr * dExpr)
                     break;
                 case op_pow:
                     return (gdouble) pow(lhs, rhs);
-                case op_greater:
-                    return lhs > rhs;
-                case op_less:
-                    return lhs < rhs;
-                case op_goe:
-                    return lhs >= rhs;
-                case op_loe:
-                    return lhs <= rhs;
-                case op_neq:
-                    return lhs != rhs;
-                case op_eq:
-                    return lhs == rhs;
             }
         }
     }
@@ -491,91 +360,4 @@ void * evaluate_expression(expr * expression)
         }
     }
     return retval;
-}
-
-/**
- * Helper to recurse and call the correct functions in each b_stmt
- * @param stmts
- * @return
- */
-void execute_b_stmt_list(b_stmt_list *stmts) {
-    if (stmts == NULL) {
-        return;
-    }
-    b_stmt *curr_stmt = stmts->b_statement;
-    if (curr_stmt->expression != NULL) {
-        evaluate_expression(curr_stmt->expression);
-    } else if (curr_stmt->ifBlock != NULL) {
-        run_if_block(curr_stmt->ifBlock);
-    } else if (curr_stmt->whileLoop != NULL) {
-        run_while_loop(curr_stmt->whileLoop);
-    } else if (curr_stmt->forLoop != NULL) {
-        run_for_loop(curr_stmt->forLoop);
-    } else if (curr_stmt->reassign != NULL) {
-        evaluate_re_assignment(curr_stmt->reassign);
-    } else if (curr_stmt->functionCall != NULL) {
-        evaluate_function(curr_stmt->functionCall);
-    } else if (curr_stmt->whileLoop != NULL) {
-        run_while_loop(curr_stmt->whileLoop);
-    }
-    execute_b_stmt_list(stmts->next);
-}
-
-/**
- * Run a for loop body a ceratin number of times
- * @param forNode
- * @return
- */
-void run_for_loop(for_node *forNode) {
-    evaluate_assignment(forNode->initialize);
-    b_stmt_list *b_list = forNode->body;
-    while (evaluate_int_expression(forNode->conditional) == 1) {
-        evaluate_re_assignment(forNode->incrementer);
-        execute_b_stmt_list(b_list);
-    }
-
-}
-
-/**
- * Run a while loop for a certain number of iterations
- * @param whileNode
- * @return
- */
-void run_while_loop(while_node *whileNode) {
-    b_stmt_list *b_list = whileNode->body;
-    while (evaluate_int_expression(whileNode->conditional) == 1) {
-        execute_b_stmt_list(b_list);
-    }
-
-}
-
-/**
- * Run an if statement
- * @param ifNode
- * @return
- */
-void run_if_block(if_node *ifNode) {
-    if (evaluate_int_expression(ifNode->expression) == 1) {
-        execute_b_stmt_list(ifNode->b_true);
-    } else {
-        if (ifNode->b_false != NULL) {
-            execute_b_stmt_list(ifNode->b_false);
-        }
-    }
-
-}
-
-/**
- * Evaluate a re-assigning node
- * @param r_asmt
- * @return
- */
-void evaluate_re_assignment(r_asmt *r_asmt) {
-    void *retval = evaluate_expression(r_asmt->expression);
-    if (r_asmt->id->type == jstring) {
-        setGlobalVariable(r_asmt->id->id, ((string_meta *) retval)->data);
-        free(retval);
-    } else {
-        setGlobalVariable(r_asmt->id->id, retval);
-    }
 }
