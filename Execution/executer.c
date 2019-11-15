@@ -24,6 +24,10 @@ void * evaluate_function(f_call * fCall);
 void * evaluate_expression(expr * expression);
 gdouble evaluate_double_expression(d_expr * dExpr);
 gint64 evaluate_int_expression(i_expr * iExpr);
+void eval_r_asmt(r_asmt *rAsmt);
+void eval_if(if_node *if_stmt);
+void eval_for(for_node *for_stmt);
+void eval_while(while_node *while_stmt);
 
 /**
  * @details This helps to keep track of "temporary" strings, such as printing out the result of a concat or charAt,
@@ -35,7 +39,6 @@ typedef struct string_meta
     GString * data;
     bool is_intermediate;
 }string_meta;
-
 
 void execute(program * parse_tree)
 {
@@ -80,10 +83,14 @@ void execute(program * parse_tree)
                     free(retval);
                 }
             }
+            else if(current->statement->reassignment!= NULL){
+                eval_r_asmt(current->statement->reassignment);
+            }
         }
     }
     destroyGlobalScope();
 }
+
 
 /**
  * @brief This is responsible for evaluating function calls
@@ -361,4 +368,124 @@ void * evaluate_expression(expr * expression)
         }
     }
     return retval;
+}
+
+void eval_r_asmt(r_asmt *rAsmt){
+
+    if(rAsmt!= NULL){
+        Type type;
+        gboolean hasType= findIDType(rAsmt->id->id, &type);
+        if(hasType== FALSE){
+            fprintf(stderr, "Identifier has not been detected!");
+        }
+        else{
+            if(rAsmt->expression->double_expression== NULL && type == jdouble){
+                fprintf(stderr, "Expression does not match ID type: jdouble\n");
+            }
+            else if(rAsmt->expression->int_expression== NULL && type== jint){
+                fprintf(stderr, "Expression does not match ID type: jint\n");
+            }
+            else if(rAsmt->expression->string_expression== NULL && type== jstring){
+                fprintf(stderr, "Expression does not match ID type: jstring\n");
+            }
+            else{
+                void * retval = evaluate_expression(rAsmt->expression);
+                if(rAsmt->id->type == jstring)
+                {
+                    setGlobalVariable(rAsmt->id->id, ((string_meta *)retval)->data);
+                    free(retval);
+                }
+                else
+                {
+                    setGlobalVariable(rAsmt->id->id, retval);
+                }
+            }
+        }
+    }
+}
+
+void eval_b_stmt_list(b_stmt_list *bStmt ){
+    for(b_stmt_list * current = bStmt; current != NULL; current = current->next)
+    {
+        if(current->bStmt != NULL)
+        {
+            if(current->bStmt->expression != NULL)
+            {
+                void * retval = evaluate_expression(current->bStmt->expression);
+                if(retval != NULL)
+                {
+                    if(current->bStmt->expression->string_expression != NULL && ((string_meta *)retval)->is_intermediate)
+                    {
+                        g_string_free(((string_meta *)retval)->data, TRUE);
+                    }
+                    free(retval);
+                }
+            }
+            else if(current->bStmt->functionCall != NULL)
+            {
+                void * retval = evaluate_function(current->bStmt->functionCall);
+                if(retval != NULL)
+                {
+                    if(current->bStmt->functionCall->id->type == jf_str && ((string_meta *)retval)->is_intermediate)
+                    {
+                        g_string_free(((string_meta *)retval)->data, TRUE);
+                    }
+                    free(retval);
+                }
+            }
+            else if(current->bStmt->reassign!= NULL){
+                eval_r_asmt(current->bStmt->reassign);
+            }
+            else if(current->bStmt->ifBlock!= NULL){
+                eval_if(current->bStmt->ifBlock);
+            }
+            else if(current->bStmt->forLoop!= NULL){
+                eval_for(current->bStmt->forLoop);
+            }
+            else if(current->bStmt->whileLoop!= NULL){
+                eval_while(current->bStmt->whileLoop);
+            }
+        }
+    }
+    destroyGlobalScope();
+}
+
+void eval_if(if_node *if_stmt) {
+    if(if_stmt != NULL){
+        if(evaluate_expression(if_stmt->expression)!= 0){
+            eval_b_stmt_list(if_stmt->b_true);
+        }
+        else{
+            if(if_stmt->b_false!= NULL){
+                eval_b_stmt_list(if_stmt->b_false);
+            }
+        }
+    }
+}
+
+void eval_for(for_node *for_stmt){
+    if(for_stmt != NULL){
+        void * retval = evaluate_expression(for_stmt->initialize->expression);
+        if(for_stmt->initialize->type == jstring)
+        {
+            setGlobalVariable(for_stmt->initialize->id->id, ((string_meta *)retval)->data);
+            free(retval);
+        }
+        else
+        {
+            setGlobalVariable(for_stmt->initialize->id->id, retval);
+        }
+        while(evaluate_int_expression(for_stmt->conditional)!= 0){
+            eval_b_stmt_list(for_stmt->body);
+            eval_r_asmt(for_stmt->incrementor);
+        }
+    }
+}
+
+void eval_while(while_node *while_stmt){
+    if(while_stmt!= NULL){
+        while(evaluate_int_expression(while_stmt->conditional)!= 0){
+            eval_b_stmt_list(while_stmt->body);
+        }
+    }
 }
