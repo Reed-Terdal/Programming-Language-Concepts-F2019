@@ -32,15 +32,15 @@ void *evaluate_expression(expr *expression);
 
 void *evaluate_assignment(asmt *asmt);
 
-void *evaluate_re_assignment(r_asmt *asmt);
+void evaluate_re_assignment(r_asmt *asmt);
 
-void *run_for_loop(for_node *forNode);
+void run_for_loop(for_node *forNode);
 
-void *run_while_loop(while_node *whileNode);
+void run_while_loop(while_node *whileNode);
 
-void *run_if_block(if_node *ifNode);
+void run_if_block(if_node *ifNode);
 
-void *execute_b_stmt(b_stmt *curr_stmt);
+void execute_b_stmt_list(b_stmt_list *stmts)
 
 gdouble evaluate_double_expression(d_expr *dExpr);
 

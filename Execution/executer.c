@@ -35,13 +35,13 @@ void execute(stmt_list *parse_tree) {
         if(current->statement != NULL)
         {
             if (current->statement->forNode != NULL) {
-                void *retval = run_for_loop(current->statement->forNode);
+                run_for_loop(current->statement->forNode);
             } else if (current->statement->whileNode != NULL) {
-                void *retval = run_while_loop(current->statement->whileNode);
+                run_while_loop(current->statement->whileNode);
             } else if (current->statement->ifNode != NULL) {
-                void *retval = run_if_block(current->statement->ifNode);
+                run_if_block(current->statement->ifNode);
             } else if (current->statement->re_asmt != NULL) {
-                void *retval = evaluate_re_assignment(current->statement->re_asmt);
+                evaluate_re_assignment(current->statement->re_asmt);
             } else if (current->statement->expression != NULL)
             {
                 void * retval = evaluate_expression(current->statement->expression);
@@ -498,9 +498,9 @@ void * evaluate_expression(expr * expression)
  * @param stmts
  * @return
  */
-void *execute_b_stmt_list(b_stmt_list *stmts) {
+void execute_b_stmt_list(b_stmt_list *stmts) {
     if (stmts == NULL) {
-        return NULL;
+        return;
     }
     b_stmt *curr_stmt = stmts->b_statement;
     if (curr_stmt->expression != NULL) {
@@ -526,7 +526,7 @@ void *execute_b_stmt_list(b_stmt_list *stmts) {
  * @param forNode
  * @return
  */
-void *run_for_loop(for_node *forNode) {
+void run_for_loop(for_node *forNode) {
     evaluate_assignment(forNode->initialize);
     b_stmt_list *b_list = forNode->body;
     while (evaluate_int_expression(forNode->conditional) == 1) {
@@ -541,7 +541,7 @@ void *run_for_loop(for_node *forNode) {
  * @param whileNode
  * @return
  */
-void *run_while_loop(while_node *whileNode) {
+void run_while_loop(while_node *whileNode) {
     b_stmt_list *b_list = whileNode->body;
     while (evaluate_int_expression(whileNode->conditional) == 1) {
         execute_b_stmt_list(b_list);
@@ -554,7 +554,7 @@ void *run_while_loop(while_node *whileNode) {
  * @param ifNode
  * @return
  */
-void *run_if_block(if_node *ifNode) {
+void run_if_block(if_node *ifNode) {
     if (evaluate_int_expression(ifNode->expression) == 1) {
         execute_b_stmt_list(ifNode->b_true);
     } else {
@@ -570,7 +570,7 @@ void *run_if_block(if_node *ifNode) {
  * @param r_asmt
  * @return
  */
-void *evaluate_re_assignment(r_asmt *r_asmt) {
+void evaluate_re_assignment(r_asmt *r_asmt) {
     void *retval = evaluate_expression(r_asmt->expression);
     if (r_asmt->id->type == jstring) {
         setGlobalVariable(r_asmt->id->id, ((string_meta *) retval)->data);
