@@ -29,7 +29,8 @@ typedef enum Type
     jf_int, // Integer function, this ID represents a function that will return an Integer on execution.
     jint, // Integer, this ID represents a literal integer value.
     jdouble, // Double, this ID represents a literal integer value.
-    jstring // String, this ID represents a literal string value.
+    jstring, // String, this ID represents a literal string value.
+    jcmp
 }Type;
 
 /**

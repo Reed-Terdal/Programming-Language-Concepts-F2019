@@ -13,6 +13,7 @@
 
 #include <stdio.h>
 #include "i_expr.h"
+#include "d_expr.h"
 #include "ids.h"
 #include "Errors.h"
 
@@ -55,35 +56,36 @@ i_expr * internal_i_expr_constructor(i_expr * parent, GArray * token_stream, uns
         }
         else
         {
-            if(curToken->type == t_integer)
-            {
-                new_i_expr->LHS_expr->literal = create_int_node(curToken, NULL);
-            }
-            else if(curToken->type == t_id)
-            {
-                if(findIDType(curToken->data, &check))
-                {
-                    if( check == jint)
-                    {
-                        // We have an already declared int variable
-                        new_i_expr->LHS_expr->id = create_id_node(curToken);
+            switch (curToken->type) {
+                case t_integer:
+                    new_i_expr->LHS_expr->literal = create_int_node(curToken, NULL);
+                    break;
+                case t_string:
+                    new_i_expr->LHS_s_expr = create_s_expr(token_stream, index, next);
+                    break;
+                case t_floating:
+                    new_i_expr->LHS_d_expr = create_d_expr(token_stream, index, next);
+                    break;
+                case t_id:
+                    if (findIDType(curToken->data, &check)) {
+                        if (check == jint) {
+                            // We have an already declared int variable
+                            new_i_expr->LHS_expr->id = create_id_node(curToken);
+                        } else {
+                            // The ID is not an int
+                            type_error(g_string_new("(Integer Literal, Integer Function)"), check, token_stream,
+                                       curIndex);
+                        }
+                    } else {
+                        // Its an ID, but it hasn't been declared
+                        undeclared_error(curToken->data, token_stream, index);
                     }
-                    else
-                    {
-                        // The ID is not an int
-                        type_error(g_string_new("(Integer Literal, Integer Function)"), check, token_stream, curIndex);
-                    }
-                }
-                else
-                {
-                    // Its an ID, but it hasn't been declared
-                    undeclared_error(curToken->data, token_stream, index);
-                }
-            }
-            else
-            {
-                unexpected_token_error(g_string_new("(Integer Literal, Integer ID, Integer Function)"), curToken->type,
-                                       token_stream, curIndex);
+                    break;
+                default:
+                    unexpected_token_error(g_string_new("(Integer Literal, Integer ID, Integer Function)"),
+                                           curToken->type,
+                                           token_stream, curIndex);
+                    break;
             }
             curIndex++;
             curToken = &g_array_index(token_stream, Token, curIndex);
@@ -150,35 +152,35 @@ i_expr * internal_i_expr_constructor(i_expr * parent, GArray * token_stream, uns
         }
         else
         {
-            if (curToken->type == t_integer)
-            {
-                new_i_expr->RHS_expr->literal = create_int_node(curToken, NULL);
-            }
-            else if (curToken->type == t_id)
-            {
-                if (findIDType(curToken->data, &check))
-                {
-                    if(check == jint)
-                    {
-                        // We have an already declared int variable
-                        new_i_expr->RHS_expr->id = create_id_node(curToken);
+            switch (curToken->type) {
+                case t_integer:
+                    new_i_expr->RHS_expr->literal = create_int_node(curToken, NULL);
+                    break;
+                case t_string:
+                    new_i_expr->RHS_s_expr = create_s_expr(token_stream, index, next);
+                    break;
+                case t_floating:
+                    new_i_expr->RHS_d_expr = create_d_expr(token_stream, index, next);
+                    break;
+                case t_id:
+                    if (findIDType(curToken->data, &check)) {
+                        if (check == jint) {
+                            // We have an already declared int variable
+                            new_i_expr->RHS_expr->id = create_id_node(curToken);
+                        } else {
+                            // Its an ID, but it is not an int
+                            type_error(g_string_new("(Integer Literal, Integer Function)"), check, token_stream,
+                                       curIndex);
+                        }
+                    } else {
+                        // Its an ID, but it hasn't been declared
+                        undeclared_error(curToken->data, token_stream, index);
                     }
-                    else
-                    {
-                        // Its an ID, but it is not an int
-                        type_error(g_string_new("(Integer Literal, Integer Function)"), check, token_stream, curIndex);
-                    }
-                }
-                else
-                {
-                    // Its an ID, but it hasn't been declared
-                    undeclared_error(curToken->data, token_stream, index);
-                }
-            }
-            else
-            {
+                    break;
+                default:
                 unexpected_token_error(g_string_new("(Integer Literal, Integer ID, Integer Function)"), curToken->type,
                                        token_stream, curIndex);
+                    break;
             }
             curIndex++;
             curToken = &g_array_index(token_stream, Token, curIndex);
@@ -252,6 +254,23 @@ GString * i_expr_to_json(i_expr * iExpr)
             g_string_append(retVal, "null");
         }
 
+        g_string_append(retVal, ", \"LHS_Str_Cmp_Expression\": ");
+        if (iExpr->LHS_s_expr != NULL) {
+            GString *child = s_expr_to_json(iExpr->LHS_s_expr);
+            g_string_append(retVal, child->str);
+            g_string_free(child, TRUE);
+        } else {
+            g_string_append(retVal, "null");
+        }
+        g_string_append(retVal, ", \"LHS_Double_Cmp_Expression\": ");
+        if (iExpr->LHS_d_expr != NULL) {
+            GString *child = d_expr_to_json(iExpr->LHS_d_expr);
+            g_string_append(retVal, child->str);
+            g_string_free(child, TRUE);
+        } else {
+            g_string_append(retVal, "null");
+        }
+
         g_string_append(retVal, ", \"Operator\": ");
         if(iExpr->operatorNode != NULL)
         {
@@ -261,6 +280,23 @@ GString * i_expr_to_json(i_expr * iExpr)
         }
         else
         {
+            g_string_append(retVal, "null");
+        }
+
+        g_string_append(retVal, ", \"RHS_Int_Expression\": ");
+        if (iExpr->RHS_expr != NULL) {
+            GString *child = i_expr_to_json(iExpr->RHS_expr);
+            g_string_append(retVal, child->str);
+            g_string_free(child, TRUE);
+        } else {
+            g_string_append(retVal, "null");
+        }
+        g_string_append(retVal, ", \"RHS_Str_Cmp_Expression\": ");
+        if (iExpr->RHS_expr != NULL) {
+            GString *child = s_expr_to_json(iExpr->RHS_s_expr);
+            g_string_append(retVal, child->str);
+            g_string_free(child, TRUE);
+        } else {
             g_string_append(retVal, "null");
         }
 
@@ -275,6 +311,7 @@ GString * i_expr_to_json(i_expr * iExpr)
         {
             g_string_append(retVal, "null");
         }
+
 
         g_string_append_c(retVal, '}');
     }

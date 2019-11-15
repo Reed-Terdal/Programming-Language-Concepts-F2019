@@ -22,8 +22,16 @@ else
 }
 print(x);
 
-while(x > 0)
+Integer val = "test" == "temp" + 1;
+print(val);
+
+String temp = "test";
+String letter = "";
+
+while(x > 4)
 {
+    letter = charAt(temp,x);
+    print(letter);
     if(x / 2)
     {
          if(x == 4)

@@ -13,6 +13,7 @@
 
 #include "Errors.h"
 #include "d_expr.h"
+#include "i_expr.h"
 
 GString * i_expr_to_str(i_expr * iExpr);
 GString * d_expr_to_str(d_expr * dExpr);

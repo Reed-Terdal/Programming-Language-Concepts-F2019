@@ -34,6 +34,7 @@ expr * create_expr(GArray * token_stream, unsigned long index, unsigned long * n
                 exit(-1);
             }
             break;
+
         case t_integer:
             exprType = jint;
             break;
@@ -49,6 +50,18 @@ expr * create_expr(GArray * token_stream, unsigned long index, unsigned long * n
             exit(-1);
     }
 
+    Token *cur = &g_array_index(token_stream, Token, index + 1);
+    switch (cur->type) {
+        case t_comp_eq:
+        case t_comp_neq:
+        case t_comp_goe:
+        case t_comp_greater:
+        case t_comp_less:
+        case t_comp_loe:
+            exprType = jint;
+        default:
+            break;
+    }
     switch (exprType)
     {
         case jf_int:
