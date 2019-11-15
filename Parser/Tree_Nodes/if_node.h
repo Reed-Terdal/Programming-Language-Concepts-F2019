@@ -19,7 +19,7 @@ typedef struct if_node
 
 if_node * create_if_node(GArray * token_stream, unsigned long index, unsigned long * next);
 
-GString * if_node_to_json(id_node *);
+GString * if_node_to_json(if_node *);
 
 void destroy_if_node(if_node *);
 

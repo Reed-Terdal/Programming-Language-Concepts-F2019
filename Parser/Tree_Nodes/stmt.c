@@ -62,8 +62,19 @@ stmt * create_stmt(GArray * token_stream, unsigned long index, unsigned long * n
                     case jint:
                     case jdouble:
                     case jstring:
-                        // Expression
-                        new_statement->expression = create_expr(token_stream, index, next);
+                        curToken = &g_array_index(token_stream, Token, index+1);
+                        if(curToken->type == t_assign)
+                        {
+                            // This is a re-assign
+                            new_statement->reassign = create_r_asmt(token_stream, index, next);
+                        }
+                        else
+                        {
+                            // Expression
+                            new_statement->expression = create_expr(token_stream, index, next);
+                            curToken = &g_array_index(token_stream, Token, *next);
+                        }
+
                         curToken = &g_array_index(token_stream, Token, *next);
                         if(curToken->type == t_end_stmt)
                         {
@@ -92,6 +103,15 @@ stmt * create_stmt(GArray * token_stream, unsigned long index, unsigned long * n
         case t_type_string:
             // 2. Assignment
             new_statement->assignment = create_asmt(token_stream, index, next);
+            break;
+        case t_if:
+            new_statement->ifBlock = create_if_node(token_stream, index, next);
+            break;
+        case t_for:
+            new_statement->forLoop = create_for_node(token_stream, index, next);
+            break;
+        case t_while:
+            new_statement->whileLoop = create_while_node(token_stream, index, next);
             break;
         default:
             // Unexpected token when creating Statement, not function call, assignment, or expression
@@ -144,6 +164,54 @@ GString * stmt_to_json(stmt * statement)
             g_string_append(retVal, "null");
         }
 
+        g_string_append(retVal, ", \"Reassignment\": ");
+        if(statement->reassign != NULL)
+        {
+            GString * child = r_asmt_to_json(statement->reassign);
+            g_string_append(retVal, child->str);
+            g_string_free(child, TRUE);
+        }
+        else
+        {
+            g_string_append(retVal, "null");
+        }
+
+        g_string_append(retVal, ", \"If_Block\": ");
+        if(statement->ifBlock != NULL)
+        {
+            GString * child = if_node_to_json(statement->ifBlock);
+            g_string_append(retVal, child->str);
+            g_string_free(child, TRUE);
+        }
+        else
+        {
+            g_string_append(retVal, "null");
+        }
+
+        g_string_append(retVal, ", \"For_Loop\": ");
+        if(statement->forLoop != NULL)
+        {
+            GString * child = for_node_to_json(statement->forLoop);
+            g_string_append(retVal, child->str);
+            g_string_free(child, TRUE);
+        }
+        else
+        {
+            g_string_append(retVal, "null");
+        }
+
+        g_string_append(retVal, ", \"While_Loop\": ");
+        if(statement->whileLoop != NULL)
+        {
+            GString * child = while_node_to_json(statement->whileLoop);
+            g_string_append(retVal, child->str);
+            g_string_free(child, TRUE);
+        }
+        else
+        {
+            g_string_append(retVal, "null");
+        }
+
         g_string_append_c(retVal, '}');
     }
     else
@@ -168,6 +236,22 @@ void destroy_stmt(stmt * statement)
         if(statement->assignment != NULL)
         {
             destroy_asmt(statement->assignment);
+        }
+        if(statement->ifBlock != NULL)
+        {
+            destroy_if_node(statement->ifBlock);
+        }
+        if(statement->reassign != NULL)
+        {
+            destroy_r_asmt(statement->reassign);
+        }
+        if(statement->whileLoop != NULL)
+        {
+            destroy_while_node(statement->whileLoop);
+        }
+        if(statement->forLoop != NULL)
+        {
+            destroy_for_node(statement->forLoop);
         }
         free(statement);
     }

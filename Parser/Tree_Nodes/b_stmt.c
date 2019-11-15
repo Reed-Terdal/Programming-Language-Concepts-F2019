@@ -59,8 +59,20 @@ b_stmt * create_b_stmt(GArray * token_stream, unsigned long index, unsigned long
                     case jint:
                     case jdouble:
                     case jstring:
-                        // Expression
-                        ret_val->expression = create_expr(token_stream, index, next);
+
+                        curToken = &g_array_index(token_stream, Token, index+1);
+                        if(curToken->type == t_assign)
+                        {
+                            // This is a re-assign
+                            ret_val->reassign = create_r_asmt(token_stream, index, next);
+                        }
+                        else
+                        {
+                            // Expression
+                            ret_val->expression = create_expr(token_stream, index, next);
+                            curToken = &g_array_index(token_stream, Token, *next);
+                        }
+
                         curToken = &g_array_index(token_stream, Token, *next);
                         if(curToken->type == t_end_stmt)
                         {
@@ -102,7 +114,121 @@ b_stmt * create_b_stmt(GArray * token_stream, unsigned long index, unsigned long
 }
 
 
-GString * b_stmt_to_json(b_stmt *);
+GString * b_stmt_to_json(b_stmt * bStmt)
+{
+    GString * retVal = g_string_new(NULL);
+    if(bStmt != NULL)
+    {
+        g_string_append(retVal, "{\"Expression\": ");
+        if(bStmt->expression != NULL)
+        {
+            GString * child = expr_to_json(bStmt->expression);
+            g_string_append(retVal, child->str);
+            g_string_free(child, TRUE);
+        }
+        else
+        {
+            g_string_append(retVal, "null");
+        }
+
+        g_string_append(retVal, ", \"Function_Call\": ");
+        if(bStmt->functionCall != NULL)
+        {
+            GString * child = f_call_to_json(bStmt->functionCall);
+            g_string_append(retVal, child->str);
+            g_string_free(child, TRUE);
+        }
+        else
+        {
+            g_string_append(retVal, "null");
+        }
+
+        g_string_append(retVal, ", \"Reassignment\": ");
+        if(bStmt->reassign != NULL)
+        {
+            GString * child = r_asmt_to_json(bStmt->reassign);
+            g_string_append(retVal, child->str);
+            g_string_free(child, TRUE);
+        }
+        else
+        {
+            g_string_append(retVal, "null");
+        }
+
+        g_string_append(retVal, ", \"If_Block\": ");
+        if(bStmt->ifBlock != NULL)
+        {
+            GString * child = if_node_to_json(bStmt->ifBlock);
+            g_string_append(retVal, child->str);
+            g_string_free(child, TRUE);
+        }
+        else
+        {
+            g_string_append(retVal, "null");
+        }
+
+        g_string_append(retVal, ", \"For_Loop\": ");
+        if(bStmt->forLoop != NULL)
+        {
+            GString * child = for_node_to_json(bStmt->forLoop);
+            g_string_append(retVal, child->str);
+            g_string_free(child, TRUE);
+        }
+        else
+        {
+            g_string_append(retVal, "null");
+        }
+
+        g_string_append(retVal, ", \"While_Loop\": ");
+        if(bStmt->whileLoop != NULL)
+        {
+            GString * child = while_node_to_json(bStmt->whileLoop);
+            g_string_append(retVal, child->str);
+            g_string_free(child, TRUE);
+        }
+        else
+        {
+            g_string_append(retVal, "null");
+        }
+
+        g_string_append_c(retVal, '}');
+    }
+    else
+    {
+        g_string_append(retVal, "null");
+    }
+    return retVal;
+}
 
 
-void destroy_b_stmt(b_stmt *);
+void destroy_b_stmt(b_stmt * bStmt)
+{
+    if(bStmt != NULL)
+    {
+        if(bStmt->expression != NULL)
+        {
+            destroy_expr(bStmt->expression);
+        }
+        if(bStmt->functionCall != NULL)
+        {
+            destroy_f_call(bStmt->functionCall);
+        }
+        if(bStmt->ifBlock != NULL)
+        {
+            destroy_if_node(bStmt->ifBlock);
+        }
+        if(bStmt->reassign != NULL)
+        {
+            destroy_r_asmt(bStmt->reassign);
+        }
+        if(bStmt->whileLoop != NULL)
+        {
+            destroy_while_node(bStmt->whileLoop);
+        }
+        if(bStmt->forLoop != NULL)
+        {
+            destroy_for_node(bStmt->forLoop);
+        }
+        free(bStmt);
+    }
+}

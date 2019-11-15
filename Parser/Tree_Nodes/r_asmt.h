@@ -16,7 +16,7 @@ typedef struct r_asmt
 } r_asmt;
 
 
-r_asmt * create_r_asmt(GArray token_stream, unsigned long index, unsigned long * next);
+r_asmt * create_r_asmt(GArray * token_stream, unsigned long index, unsigned long * next);
 
 
 GString * r_asmt_to_json(r_asmt * rAsmt);

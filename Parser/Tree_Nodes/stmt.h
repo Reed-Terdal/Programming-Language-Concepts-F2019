@@ -20,6 +20,7 @@
 #include "if_node.h"
 #include "for_node.h"
 #include "while_node.h"
+#include "r_asmt.h"
 
 /**
  * Represents a statement, can be in one of 3 configurations:
@@ -31,6 +32,7 @@ typedef struct stmt
 {
     f_call * function_call;
     asmt * assignment;
+    r_asmt * reassign;
     expr * expression;
     if_node * ifBlock;
     for_node * forLoop;
