@@ -1,9 +1,9 @@
 #include <stdio.h>
+#include "executer.h"
 #include <glib.h>
 #include "Token.h"
 #include "scanner.h"
 #include "parser.h"
-#include "executer.h"
 #include <errno.h>
 
 /**
@@ -53,7 +53,7 @@ int main(int argc, char ** argv)
 
     /// Execution
     g_timer_start(benchTimer);
-    execute(parseTree);
+    execute(parseTree->statement_list);
     g_timer_stop(benchTimer);
     g_string_append_printf(metadata, "\"Run Time(us)\": %.2f, ", g_timer_elapsed(benchTimer, NULL) * 1000 * 1000);
 

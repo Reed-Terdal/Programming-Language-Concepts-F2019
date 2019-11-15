@@ -36,7 +36,8 @@ add_executable(jott
         Parser/Tree_Nodes/p_list.h
         Parser/Token.c
         Scanner/scanner.c Scanner/scanner.h Scanner/scannerData.h Scanner/keyword_lookup.h
-        Execution/executer.c Execution/executer.h
+        Execution/executer.h
+        Execution/executer.c
         Global_Data/ids.c Global_Data/ids.h
         Parser/Tree_Nodes/Parse_Nodes/int_node.c
         Parser/Tree_Nodes/b_stmt_list.c
