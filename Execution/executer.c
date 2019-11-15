@@ -240,6 +240,37 @@ gint64 evaluate_int_expression(i_expr * iExpr)
                         divide_by_zero_int_error(iExpr->LHS_expr, iExpr->RHS_expr);
                     }
                     break;
+                case op_greater: return lhs > rhs;
+                case op_goe: return lhs >= rhs;
+                case op_less: return lhs < rhs;
+                case op_loe: return lhs <= rhs;
+                case op_eq: return lhs == rhs;
+                case op_neq: return lhs != rhs;
+            }
+        }
+        else if(iExpr->LHS_s_expr != NULL && iExpr->RHS_s_expr!= NULL && iExpr->operatorNode!= NULL){
+            string_meta *lhs = evaluate_string_expression(iExpr->LHS_s_expr);
+            string_meta *rhs = evaluate_string_expression(iExpr->RHS_s_expr);
+            int result= strcmp(lhs->data->str, rhs->data->str);
+            switch(iExpr->operatorNode->opType){
+                case op_greater: return result > 0;
+                case op_less: return result < 0;
+                case op_goe: return result >= 0;
+                case op_loe: return result <= 0;
+                case op_eq: return result ==0;
+                case op_neq: return result != 0;
+            }
+        }
+        else if(iExpr->LHS_d_expr != NULL && iExpr->RHS_d_expr!= NULL && iExpr->operatorNode!= NULL){
+            gdouble lhs = evaluate_double_expression(iExpr->LHS_d_expr);
+            gdouble rhs = evaluate_double_expression(iExpr->RHS_d_expr);
+            switch(iExpr->operatorNode->opType){
+                case op_greater: return lhs > rhs;
+                case op_goe: return lhs >= rhs;
+                case op_less: return lhs < rhs;
+                case op_loe: return lhs <= rhs;
+                case op_eq: return lhs == rhs;
+                case op_neq: return lhs != rhs;
             }
         }
     }
@@ -334,6 +365,12 @@ gdouble evaluate_double_expression(d_expr * dExpr)
                     break;
                 case op_pow:
                     return (gdouble) pow(lhs, rhs);
+                case op_greater: return lhs > rhs;
+                case op_goe: return lhs >= rhs;
+                case op_less: return lhs < rhs;
+                case op_loe: return lhs <= rhs;
+                case op_eq: return lhs == rhs;
+                case op_neq: return lhs != rhs;
             }
         }
     }
