@@ -43,12 +43,12 @@ i_expr * internal_i_expr_constructor(i_expr * parent, GArray * token_stream, uns
     if(parent == NULL)
     {
         // This is the entrance of our recursive builder
-        new_i_expr->LHS_expr = calloc(1, sizeof(i_expr));
         if(curToken->type == t_plus || curToken->type == t_minus)
         {
             // We have a sign symbol
             if(nextToken->type == t_integer)
             {
+                new_i_expr->LHS_expr = calloc(1, sizeof(i_expr));
                 new_i_expr->LHS_expr->literal = create_int_node(nextToken, curToken);
                 curIndex += 2;
                 curToken = &g_array_index(token_stream, Token, curIndex);
@@ -58,17 +58,19 @@ i_expr * internal_i_expr_constructor(i_expr * parent, GArray * token_stream, uns
         {
             switch (curToken->type) {
                 case t_integer:
+                    new_i_expr->LHS_expr = calloc(1, sizeof(i_expr));
                     new_i_expr->LHS_expr->literal = create_int_node(curToken, NULL);
                     break;
                 case t_string:
-                    new_i_expr->LHS_s_expr = create_s_expr(token_stream, index, next);
+                    new_i_expr->LHS_s_expr = create_s_expr(token_stream, curIndex, next);
                     break;
                 case t_floating:
-                    new_i_expr->LHS_d_expr = create_d_expr(token_stream, index, next);
+                    new_i_expr->LHS_d_expr = create_d_expr(token_stream, curIndex, next);
                     break;
                 case t_id:
                     if (findIDType(curToken->data, &check)) {
                         if (check == jint) {
+                            new_i_expr->LHS_expr = calloc(1, sizeof(i_expr));
                             // We have an already declared int variable
                             new_i_expr->LHS_expr->id = create_id_node(curToken);
                         } else {
@@ -139,12 +141,12 @@ i_expr * internal_i_expr_constructor(i_expr * parent, GArray * token_stream, uns
         curToken = &g_array_index(token_stream, Token, curIndex);
         nextToken = &g_array_index(token_stream, Token, curIndex + 1);
 
-        new_i_expr->RHS_expr = calloc(1, sizeof(i_expr));
         if (curToken->type == t_plus || curToken->type == t_minus)
         {
             // We have a sign symbol
             if (nextToken->type == t_integer)
             {
+                new_i_expr->RHS_expr = calloc(1, sizeof(i_expr));
                 new_i_expr->RHS_expr->literal = create_int_node(nextToken, curToken);
                 curIndex += 2;
                 curToken = &g_array_index(token_stream, Token, curIndex);
@@ -154,18 +156,20 @@ i_expr * internal_i_expr_constructor(i_expr * parent, GArray * token_stream, uns
         {
             switch (curToken->type) {
                 case t_integer:
+                    new_i_expr->RHS_expr = calloc(1, sizeof(i_expr));
                     new_i_expr->RHS_expr->literal = create_int_node(curToken, NULL);
                     break;
                 case t_string:
-                    new_i_expr->RHS_s_expr = create_s_expr(token_stream, index, next);
+                    new_i_expr->RHS_s_expr = create_s_expr(token_stream, curIndex, next);
                     break;
                 case t_floating:
-                    new_i_expr->RHS_d_expr = create_d_expr(token_stream, index, next);
+                    new_i_expr->RHS_d_expr = create_d_expr(token_stream, curIndex, next);
                     break;
                 case t_id:
                     if (findIDType(curToken->data, &check)) {
                         if (check == jint) {
                             // We have an already declared int variable
+                            new_i_expr->RHS_expr = calloc(1, sizeof(i_expr));
                             new_i_expr->RHS_expr->id = create_id_node(curToken);
                         } else {
                             // Its an ID, but it is not an int
@@ -206,7 +210,7 @@ GString * i_expr_to_json(i_expr * iExpr)
     GString * retVal = g_string_new(NULL);
     if(iExpr != NULL)
     {
-        g_string_append(retVal, "{\"Int_Function_Call\": ");
+        g_string_append(retVal, "{\"Int Function Call\": ");
         if(iExpr->function_call != NULL)
         {
             GString * child = f_call_to_json(iExpr->function_call);
@@ -218,7 +222,7 @@ GString * i_expr_to_json(i_expr * iExpr)
             g_string_append(retVal, "null");
         }
 
-        g_string_append(retVal, ", \"Int_Literal\": ");
+        g_string_append(retVal, ", \"Int Literal\": ");
         if(iExpr->literal != NULL)
         {
             GString * child = int_node_to_json(iExpr->literal);
@@ -230,7 +234,7 @@ GString * i_expr_to_json(i_expr * iExpr)
             g_string_append(retVal, "null");
         }
 
-        g_string_append(retVal, ", \"ID_Node\": ");
+        g_string_append(retVal, ", \"ID Node\": ");
         if(iExpr->id != NULL)
         {
             GString * child = id_node_to_json(iExpr->id);
@@ -242,7 +246,7 @@ GString * i_expr_to_json(i_expr * iExpr)
             g_string_append(retVal, "null");
         }
 
-        g_string_append(retVal, ", \"LHS_Int_Expression\": ");
+        g_string_append(retVal, ", \"L Int Expr\": ");
         if(iExpr->LHS_expr != NULL)
         {
             GString * child = i_expr_to_json(iExpr->LHS_expr);
@@ -254,7 +258,7 @@ GString * i_expr_to_json(i_expr * iExpr)
             g_string_append(retVal, "null");
         }
 
-        g_string_append(retVal, ", \"LHS_Str_Cmp_Expression\": ");
+        g_string_append(retVal, ", \"L Str Expr\": ");
         if (iExpr->LHS_s_expr != NULL) {
             GString *child = s_expr_to_json(iExpr->LHS_s_expr);
             g_string_append(retVal, child->str);
@@ -262,7 +266,7 @@ GString * i_expr_to_json(i_expr * iExpr)
         } else {
             g_string_append(retVal, "null");
         }
-        g_string_append(retVal, ", \"LHS_Double_Cmp_Expression\": ");
+        g_string_append(retVal, ", \"L Double Expr\": ");
         if (iExpr->LHS_d_expr != NULL) {
             GString *child = d_expr_to_json(iExpr->LHS_d_expr);
             g_string_append(retVal, child->str);
@@ -283,7 +287,7 @@ GString * i_expr_to_json(i_expr * iExpr)
             g_string_append(retVal, "null");
         }
 
-        g_string_append(retVal, ", \"RHS_Int_Expression\": ");
+        g_string_append(retVal, ", \"R Int Expr\": ");
         if (iExpr->RHS_expr != NULL) {
             GString *child = i_expr_to_json(iExpr->RHS_expr);
             g_string_append(retVal, child->str);
@@ -291,8 +295,8 @@ GString * i_expr_to_json(i_expr * iExpr)
         } else {
             g_string_append(retVal, "null");
         }
-        g_string_append(retVal, ", \"RHS_Str_Cmp_Expression\": ");
-        if (iExpr->RHS_expr != NULL) {
+        g_string_append(retVal, ", \"R Str Expr\": ");
+        if (iExpr->RHS_s_expr != NULL) {
             GString *child = s_expr_to_json(iExpr->RHS_s_expr);
             g_string_append(retVal, child->str);
             g_string_free(child, TRUE);
@@ -300,10 +304,10 @@ GString * i_expr_to_json(i_expr * iExpr)
             g_string_append(retVal, "null");
         }
 
-        g_string_append(retVal, ", \"RHS_Int_Expression\": ");
-        if(iExpr->RHS_expr != NULL)
+        g_string_append(retVal, ", \"R Double Expr\": ");
+        if (iExpr->RHS_d_expr != NULL)
         {
-            GString * child = i_expr_to_json(iExpr->RHS_expr);
+            GString *child = d_expr_to_json(iExpr->RHS_d_expr);
             g_string_append(retVal, child->str);
             g_string_free(child, TRUE);
         }
@@ -350,6 +354,12 @@ void destroy_i_expr(i_expr * iExpr)
         if(iExpr->id != NULL)
         {
             destroy_id_node(iExpr->id);
+        }
+        if (iExpr->LHS_s_expr != NULL) {
+            destroy_s_expr(iExpr->LHS_s_expr);
+        }
+        if (iExpr->LHS_d_expr != NULL) {
+            destroy_d_expr(iExpr->LHS_d_expr);
         }
         free(iExpr);
     }

@@ -1,5 +1,5 @@
 // This is a comment
-Integer x = 5;
+Integer x = 20;
 
 Integer y = x ^ 2;
 
@@ -9,11 +9,10 @@ for(Integer idx = 0; idx < x; idx = idx + 1)
 {
     result = result + x;
 }
-
 if(y == result)
 {
     print("quick maf");
-    x = 3;
+    x = 15;
 }
 else
 {
@@ -22,33 +21,32 @@ else
 }
 print(x);
 
-Integer val = "test" == "temp" + 1;
+Integer val = "test" == "test" + 10 > 4;
+print(val);
+
+val = "test" == "tesy" + 10;
 print(val);
 
 String temp = "test";
 String letter = "";
 
-while(x > 4)
+while(x > 0)
 {
-    letter = charAt(temp,x);
-    print(letter);
-    if(x / 2)
+    if(x < 5)
     {
-         if(x == 4)
+         if(x == 2)
          {
-             print("x is 4 now");
+             print("x is 2 now");
          }
-        print("x is even ");
-        print(x);
+        print("x less than 5 ");
     }
     else
     {
-        if(x == 5)
+        if(x == 8)
         {
-             print("x is 5 now");
+             print("x is 8 now");
         }
-        print("x is odd ");
-        print(x);
+        print("x is over 5 ");
     }
     x = x - 1;
 }
