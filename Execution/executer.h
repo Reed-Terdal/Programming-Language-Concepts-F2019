@@ -38,7 +38,7 @@ void *run_for_loop(for_node *forNode);
 
 void *run_while_loop(while_node *whileNode);
 
-void *run_if_loop(if_node *ifNode);
+void *run_if_block(if_node *ifNode);
 
 void *execute_b_stmt(b_stmt *curr_stmt);
 

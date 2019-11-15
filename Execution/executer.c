@@ -17,9 +17,6 @@
 #include <stdio.h>
 #include <Errors.h>
 
-#define LEN(a) (sizeof(a) / sizeof(*a))
-
-
 /**
  * @details This helps to keep track of "temporary" strings, such as printing out the result of a concat or charAt,
  * this are not assigned at any point and are thrown out after evaluation.
@@ -42,7 +39,7 @@ void execute(stmt_list *parse_tree) {
             } else if (current->statement->whileNode != NULL) {
                 void *retval = run_while_loop(current->statement->whileNode);
             } else if (current->statement->ifNode != NULL) {
-                void *retval = run_if_loop(current->statement->ifNode);
+                void *retval = run_if_block(current->statement->ifNode);
             } else if (current->statement->re_asmt != NULL) {
                 void *retval = evaluate_re_assignment(current->statement->re_asmt);
             } else if (current->statement->expression != NULL)
@@ -218,6 +215,7 @@ gint64 evaluate_int_expression(i_expr * iExpr)
         }
         else if(iExpr->LHS_expr != NULL && iExpr->operatorNode != NULL && iExpr->RHS_expr != NULL)
         {
+            // Integer comparisons
             gint64 lhs = evaluate_int_expression(iExpr->LHS_expr);
             gint64 rhs = evaluate_int_expression(iExpr->RHS_expr);
             switch (iExpr->operatorNode->opType)
@@ -250,6 +248,8 @@ gint64 evaluate_int_expression(i_expr * iExpr)
                     return lhs == rhs;
             }
         } else if (iExpr->operatorNode != NULL) {
+
+            // String comparisons
             if (iExpr->LHS_s_expr != NULL && iExpr->RHS_s_expr != NULL) {
                 string_meta *lhs = evaluate_string_expression(iExpr->LHS_s_expr);
                 string_meta *rhs = evaluate_string_expression(iExpr->RHS_s_expr);
@@ -335,6 +335,7 @@ gint64 evaluate_int_expression(i_expr * iExpr)
                 }
             }
         }
+        // Double comparisons
         if (iExpr->LHS_d_expr != NULL && iExpr->RHS_d_expr != NULL) {
             gdouble lhs = evaluate_double_expression(iExpr->LHS_d_expr);
             gdouble rhs = evaluate_double_expression(iExpr->RHS_d_expr);
@@ -421,6 +422,7 @@ gdouble evaluate_double_expression(d_expr * dExpr)
                 return *retval;
             }
         }
+
         else if(dExpr->LHS_expr != NULL && dExpr->operator != NULL && dExpr->RHS_expr != NULL)
         {
             gdouble lhs = evaluate_double_expression(dExpr->LHS_expr);
@@ -491,6 +493,11 @@ void * evaluate_expression(expr * expression)
     return retval;
 }
 
+/**
+ * Helper to recurse and call the correct functions in each b_stmt
+ * @param stmts
+ * @return
+ */
 void *execute_b_stmt_list(b_stmt_list *stmts) {
     if (stmts == NULL) {
         return NULL;
@@ -499,7 +506,7 @@ void *execute_b_stmt_list(b_stmt_list *stmts) {
     if (curr_stmt->expression != NULL) {
         evaluate_expression(curr_stmt->expression);
     } else if (curr_stmt->ifBlock != NULL) {
-        run_if_loop(curr_stmt->ifBlock);
+        run_if_block(curr_stmt->ifBlock);
     } else if (curr_stmt->whileLoop != NULL) {
         run_while_loop(curr_stmt->whileLoop);
     } else if (curr_stmt->forLoop != NULL) {
@@ -514,6 +521,11 @@ void *execute_b_stmt_list(b_stmt_list *stmts) {
     execute_b_stmt_list(stmts->next);
 }
 
+/**
+ * Run a for loop body a ceratin number of times
+ * @param forNode
+ * @return
+ */
 void *run_for_loop(for_node *forNode) {
     evaluate_assignment(forNode->initialize);
     b_stmt_list *b_list = forNode->body;
@@ -524,6 +536,11 @@ void *run_for_loop(for_node *forNode) {
 
 }
 
+/**
+ * Run a while loop for a certain number of iterations
+ * @param whileNode
+ * @return
+ */
 void *run_while_loop(while_node *whileNode) {
     b_stmt_list *b_list = whileNode->body;
     while (evaluate_int_expression(whileNode->conditional) == 1) {
@@ -532,7 +549,12 @@ void *run_while_loop(while_node *whileNode) {
 
 }
 
-void *run_if_loop(if_node *ifNode) {
+/**
+ * Run an if statement
+ * @param ifNode
+ * @return
+ */
+void *run_if_block(if_node *ifNode) {
     if (evaluate_int_expression(ifNode->expression) == 1) {
         execute_b_stmt_list(ifNode->b_true);
     } else {
@@ -543,6 +565,11 @@ void *run_if_loop(if_node *ifNode) {
 
 }
 
+/**
+ * Evaluate a re-assigning node
+ * @param r_asmt
+ * @return
+ */
 void *evaluate_re_assignment(r_asmt *r_asmt) {
     void *retval = evaluate_expression(r_asmt->expression);
     if (r_asmt->id->type == jstring) {
