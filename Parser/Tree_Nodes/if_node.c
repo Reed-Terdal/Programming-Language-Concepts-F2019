@@ -18,8 +18,15 @@
 if_node *create_if_node(GArray *token_stream, unsigned long index, unsigned long *next) {
     if_node *retVal = NULL;
     retVal = calloc(1, sizeof(if_node));
-    (*next)++;
-    Token *check = &g_array_index(token_stream, Token, *next);
+    Token *check = &g_array_index(token_stream, Token, index);
+    if (check->type == t_if) {
+        (*next)++;
+    } else {
+        fprintf(stderr,
+                "Syntax Error: missing definition of if statement");
+        exit(-1);
+    }
+    check = &g_array_index(token_stream, Token, index + 1);
     if (check->type == t_start_paren) {
         (*next)++;
     } else {
@@ -28,57 +35,25 @@ if_node *create_if_node(GArray *token_stream, unsigned long index, unsigned long
         exit(-1);
     }
     // Grab expression to evaluate
-    retVal->expression = create_i_expr(token_stream, *next, next);
-
+    retVal->expression = create_i_expr(token_stream, index + 2, next);
     check = &g_array_index(token_stream, Token, *next);
     // Is there an end parend and starting bracket for b_stmt?
     if (check->type == t_end_paren) {
         (*next)++;
-        check = &g_array_index(token_stream, Token, *next);
     } else {
         fprintf(stderr,
                 "Syntax Error: missing end parend in if statement");
         exit(-1);
     }
-    if (check->type == t_start_bracket) {
-        (*next)++;
-    } else {
-        fprintf(stderr,
-                "Syntax Error: missing start bracket in if statement");
-        exit(-1);
-    }
-
     // Make B_stmt_list for true branch
     retVal->b_true = create_b_stmt_list(token_stream, *next, next);
     check = &g_array_index(token_stream, Token, *next);
-    if (check->type == t_end_bracket) {
+    if (check->type == t_else) {
         (*next)++;
-        check = &g_array_index(token_stream, Token, *next);
-        if (check->type == t_else) {
-            (*next)++;
-            check = &g_array_index(token_stream, Token, *next);
-            if (check->type != t_start_bracket) {
-                fprintf(stderr,
-                        "Syntax Error: missing start bracket in else statement");
-                exit(-1);
-            }
-            (*next)++;
-            retVal->b_false = create_b_stmt_list(token_stream, *next, next);
-            check = &g_array_index(token_stream, Token, *next);
-            if (check->type == t_end_bracket) {
-                (*next)++;
-                return retVal;
-            } else {
-                fprintf(stderr, "Syntax Error: Missing } at end of else statement");
-                exit(-1);
-
-            }
-        }
-        return retVal;
-    } else {
-        fprintf(stderr, "Syntax Error: Missing } at end of if statement");
-        exit(-1);
+        retVal->b_false = create_b_stmt_list(token_stream, *next, next);
     }
+    return retVal;
+
 }
 
 GString *if_node_to_json(if_node *ifNode) {
@@ -125,10 +100,10 @@ void destroy_if_node(if_node *ifNode) {
             destroy_i_expr(ifNode->expression);
 
         if (ifNode->b_true)
-            free(ifNode->b_true);
+            destroy_b_stmt_list(ifNode->b_true);
 
         if (ifNode->b_false)
-            free(ifNode->b_false);
+            destroy_b_stmt_list(ifNode->b_false);
         free(ifNode);
     }
 }

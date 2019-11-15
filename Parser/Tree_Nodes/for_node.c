@@ -18,11 +18,18 @@
 
 for_node *create_for_node(GArray *token_stream, unsigned long index, unsigned long *next) {
     for_node *retVal = NULL;
-
+    Token *check = &g_array_index(token_stream, Token, index);
+    if (check->type == t_for) {
+        (*next)++;
+    } else {
+        fprintf(stderr,
+                "Syntax Error: missing start parend in for loop");
+        exit(-1);
+    }
     // Make new for node
     retVal = calloc(1, sizeof(for_node));
     (*next)++;
-    Token *check = &g_array_index(token_stream, Token, *next);
+    check = &g_array_index(token_stream, Token, index + 1);
     if (check->type == t_start_paren) {
         (*next)++;
     } else {
@@ -31,11 +38,11 @@ for_node *create_for_node(GArray *token_stream, unsigned long index, unsigned lo
         exit(-1);
     }
     // Grab first assignment
-    retVal->initialize = create_asmt(token_stream, *next, next);
+    retVal->initialize = create_asmt(token_stream, index + 2, next);
     // Grab the conditional statement next
     retVal->conditional = create_i_expr(token_stream, *next, next);
     //Check next char
-    check = &g_array_index(token_stream, Token, *next);
+    check = &g_array_index(token_stream, Token, (*next));
     if (check->type == t_end_stmt) {
         (*next)++;
     } else {
@@ -57,24 +64,8 @@ for_node *create_for_node(GArray *token_stream, unsigned long index, unsigned lo
         exit(-1);
     }
 
-    //Check for closing bracket
-    check = &g_array_index(token_stream, Token, *next);
-    if (check->type == t_start_bracket) {
-        (*next)++;
-    } else {
-        fprintf(stderr,
-                "Syntax Error: missing start bracket in for loop");
-        exit(-1);
-    }
     retVal->body = create_b_stmt_list(token_stream, *next, next);
-    check = &g_array_index(token_stream, Token, (*next));
-    if (check->type == t_end_bracket) {
-        (*next)++;
-        return retVal;
-    } else {
-        fprintf(stderr, "Syntax Error: Missing } at end of for statement");
-        exit(-1);
-    }
+    return retVal;
 }
 
 GString *for_node_to_json(for_node *forNode) {
@@ -114,16 +105,16 @@ GString *for_node_to_json(for_node *forNode) {
 void destroy_for_node(for_node *forNode) {
     if (forNode != NULL) {
         if (forNode->conditional) {
-            free(forNode->conditional);
+            destroy_i_expr(forNode->conditional);
         }
         if (forNode->incrementer) {
-            free(forNode->incrementer);
+            destroy_r_asmt(forNode->incrementer);
         }
         if (forNode->initialize) {
-            free(forNode->initialize);
+            destroy_asmt(forNode->initialize);
         }
         if (forNode->body) {
-            free(forNode->body);
+            destroy_b_stmt_list(forNode->body);
         }
         free(forNode);
     }
