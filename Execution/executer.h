@@ -40,7 +40,7 @@ void run_while_loop(while_node *whileNode);
 
 void run_if_block(if_node *ifNode);
 
-void execute_b_stmt_list(b_stmt_list *stmts)
+void execute_b_stmt_list(b_stmt_list *stmts);
 
 gdouble evaluate_double_expression(d_expr *dExpr);
 
