@@ -1,19 +1,18 @@
 // This is a comment
-Integer x = 5;
+Integer x = 20;
 
 Integer y = x ^ 2;
 
 Integer result = 0;
 
-for(Integer idx = 0; idx < x; idx++)
+for(Integer idx = 0; idx < x; idx = idx + 1)
 {
     result = result + x;
 }
-
 if(y == result)
 {
     print("quick maf");
-    x = 3;
+    x = 15;
 }
 else
 {
@@ -22,17 +21,30 @@ else
 }
 print(x);
 
+Integer val = "test" == "temp" + 2;
+print(val);
+
+
+String temp = "test";
+String letter = "";
+
 while(x > 0)
 {
-    if(x / 2)
+    if(x < 5)
     {
-        print("x is even ");
-        print(x);
+         if(x == 2)
+         {
+             print("x is 2 now");
+         }
+        print("x less than 5 ");
     }
     else
     {
-        print("x is odd ");
-        print(x);
+        if(x == 8)
+        {
+             print("x is 8 now");
+        }
+        print("x is over 5 ");
     }
     x = x - 1;
 }

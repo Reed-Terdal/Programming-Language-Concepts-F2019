@@ -16,7 +16,6 @@
 expr * create_expr(GArray * token_stream, unsigned long index, unsigned long * next)
 {
     expr * new_expr = calloc(1, sizeof(expr));
-
     Token * first = &g_array_index(token_stream, Token, index);
     if(first->type == t_minus || first->type == t_plus)
     {
@@ -24,7 +23,6 @@ expr * create_expr(GArray * token_stream, unsigned long index, unsigned long * n
     }
 
     Type exprType;
-
     switch (first->type)
     {
         case t_id:
@@ -32,10 +30,11 @@ expr * create_expr(GArray * token_stream, unsigned long index, unsigned long * n
             if(!findIDType(first->data, &exprType))
             {
                 // ID has not been declared yet.
-                fprintf(stderr, "Syntax Error: Tried to use variable before it has been declared");
+                fprintf(stderr, "Syntax Error: Tried to use variable before it has been declared %i", first->line_num);
                 exit(-1);
             }
             break;
+
         case t_integer:
             exprType = jint;
             break;
@@ -47,10 +46,22 @@ expr * create_expr(GArray * token_stream, unsigned long index, unsigned long * n
             break;
         default:
             // Unexpected Token when building expression
-            fprintf(stderr, "Syntax Error: Unexpected token when building expression");
+            fprintf(stderr, "Syntax Error: Unexpected token when building expression %s", first->data->str);
             exit(-1);
     }
 
+    Token *cur = &g_array_index(token_stream, Token, index + 1);
+    switch (cur->type) {
+        case t_comp_eq:
+        case t_comp_neq:
+        case t_comp_goe:
+        case t_comp_greater:
+        case t_comp_less:
+        case t_comp_loe:
+            exprType = jint;
+        default:
+            break;
+    }
     switch (exprType)
     {
         case jf_int:
@@ -71,6 +82,7 @@ expr * create_expr(GArray * token_stream, unsigned long index, unsigned long * n
             new_expr->string_expression = create_s_expr(token_stream, index, next);
         }
             break;
+
         default:
             // This means we have a INVALID type or void function call as part of an expression.
             fprintf(stderr, "Syntax Error: mismatch types in expression");

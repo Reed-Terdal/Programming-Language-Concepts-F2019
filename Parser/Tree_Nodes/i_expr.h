@@ -14,11 +14,10 @@
 #define JOTT_INTERPRETTER_I_EXPR_H
 
 #include "Token.h"
-#include "f_call.h"
 #include <stdbool.h>
-#include "int_node.h"
 #include "operator_node.h"
-#include "id_node.h"
+#include "s_expr.h"
+#include "int_node.h"
 
 /**
  * Represents a function call, can have one of 4 configurations:
@@ -34,6 +33,10 @@ typedef struct i_expr
     operator_node * operatorNode;
     struct i_expr * RHS_expr;
     struct i_expr * LHS_expr;
+    struct s_expr *RHS_s_expr;
+    struct s_expr *LHS_s_expr;
+    struct d_expr *RHS_d_expr;
+    struct d_expr *LHS_d_expr;
     f_call * function_call;
 }i_expr;
 

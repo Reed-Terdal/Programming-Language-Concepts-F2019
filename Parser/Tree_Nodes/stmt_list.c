@@ -13,7 +13,7 @@
 
 #include "stmt_list.h"
 
-stmt_list * create_stmt_list(GArray * token_stream, unsigned long index, unsigned long * next)
+stmt_list *  create_stmt_list(GArray * token_stream, unsigned long index, unsigned long * next)
 {
     stmt_list * new_statement_list = calloc(1, sizeof(stmt_list));
     new_statement_list->statement = create_stmt(token_stream, index, next);

@@ -19,11 +19,16 @@
 
 
 typedef struct string_meta string_meta;
-string_meta * evaluate_string_expression(s_expr * sExpr);
-void * evaluate_function(f_call * fCall);
-void * evaluate_expression(expr * expression);
-gdouble evaluate_double_expression(d_expr * dExpr);
-gint64 evaluate_int_expression(i_expr * iExpr);
+
+string_meta *evaluate_string_expression(s_expr *sExpr);
+
+void *evaluate_function(f_call *fCall);
+
+void *evaluate_expression(expr *expression);
+
+gdouble evaluate_double_expression(d_expr *dExpr);
+
+gint64 evaluate_int_expression(i_expr *iExpr);
 
 /**
  * @details This helps to keep track of "temporary" strings, such as printing out the result of a concat or charAt,
@@ -37,13 +42,12 @@ typedef struct string_meta
 }string_meta;
 
 
-void execute(program * parse_tree)
-{
-    for(stmt_list * current = parse_tree->statement_list; current != NULL; current = current->statement_list)
+void execute(program *parse_tree) {
+    for (stmt_list *current = parse_tree->statement_list; current != NULL; current = current->statement_list)
     {
         if(current->statement != NULL)
         {
-            if(current->statement->expression != NULL)
+            if (current->statement->expression != NULL)
             {
                 void * retval = evaluate_expression(current->statement->expression);
                 if(retval != NULL)
@@ -57,14 +61,11 @@ void execute(program * parse_tree)
             }
             else if(current->statement->assignment != NULL)
             {
-                void * retval = evaluate_expression(current->statement->assignment->expression);
-                if(current->statement->assignment->id->type == jstring)
-                {
-                    setGlobalVariable(current->statement->assignment->id->id, ((string_meta *)retval)->data);
+                void *retval = evaluate_expression(current->statement->assignment->expression);
+                if (current->statement->assignment->id->type == jstring) {
+                    setGlobalVariable(current->statement->assignment->id->id, ((string_meta *) retval)->data);
                     free(retval);
-                }
-                else
-                {
+                } else {
                     setGlobalVariable(current->statement->assignment->id->id, retval);
                 }
             }
@@ -353,11 +354,9 @@ void * evaluate_expression(expr * expression)
         {
             retval = calloc(1, sizeof(gint64));
             *((gint64 *)retval) = evaluate_int_expression(expression->int_expression);
-        }
-        else if(expression->double_expression != NULL)
-        {
+        } else if (expression->double_expression != NULL) {
             retval = calloc(1, sizeof(gdouble));
-            *((gdouble *)retval) = evaluate_double_expression(expression->double_expression);
+            *((gdouble *) retval) = evaluate_double_expression(expression->double_expression);
         }
     }
     return retval;

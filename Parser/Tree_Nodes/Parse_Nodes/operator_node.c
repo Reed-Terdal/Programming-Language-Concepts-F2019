@@ -37,6 +37,24 @@ operator_node * create_operator(Token * opToken)
             case t_power:
                 retVal->opType = op_pow;
                 break;
+            case t_comp_greater:
+                retVal->opType = op_greater;
+                break;
+            case t_comp_goe:
+                retVal->opType = op_goe;
+                break;
+            case t_comp_neq:
+                retVal->opType = op_neq;
+                break;
+            case t_comp_eq:
+                retVal->opType = op_eq;
+                break;
+            case t_comp_less:
+                retVal->opType = op_less;
+                break;
+            case t_comp_loe:
+                retVal->opType = op_loe;
+                break;
             default:
                 fprintf(stderr, "Syntax Error: Unexpected Token when creating operator");
                 exit(-1);
@@ -67,6 +85,24 @@ GString * operator_to_json(operator_node * anOperator)
                 break;
             case op_pow:
                 g_string_append(retval, "{\"Type\": \"^\"}");
+                break;
+            case op_greater:
+                g_string_append(retval, "{\"Type\": \">\"}");
+                break;
+            case op_goe:
+                g_string_append(retval, "{\"Type\": \">=\"}");
+                break;
+            case op_less:
+                g_string_append(retval, "{\"Type\": \"<\"}");
+                break;
+            case op_loe:
+                g_string_append(retval, "{\"Type\": \"<=\"}");
+                break;
+            case op_eq:
+                g_string_append(retval, "{\"Type\": \"==\"}");
+                break;
+            case op_neq:
+                g_string_append(retval, "{\"Type\": \"!=\"}");
                 break;
             default:
                 g_string_append(retval, "{\"Type\": null}");

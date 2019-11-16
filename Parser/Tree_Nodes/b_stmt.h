@@ -1,22 +1,22 @@
 /**************************************************************************************************
 *
-* File Name: stmt.h
+* File Name: b_stmt.h
 *
-* Author: Reed Terdal
+* Author: Jameson Toper
 *
-* Created for CS344 on: 09/25/2019
+* Created for CS344 on: 11/07/2019
 *
-* Purpose: Header that provides access to functions for manipulating statement nodes.
+* Purpose: Header that provides access to functions for manipulating b_statement nodes.
 *
 **************************************************************************************************/
 
-#ifndef JOTT_INTERPRETTER_STMT_H
-#define JOTT_INTERPRETTER_STMT_H
+#ifndef JOTT_INTERPRETTER_B_STMT_H
+#define JOTT_INTERPRETTER_B_STMT_H
 
-#include "f_call.h"
-#include "asmt.h"
-#include <glib.h>
-#include "b_stmt_list.h"
+#include "r_asmt.h"
+#include "for_node.h"
+#include "while_node.h"
+#include "if_node.h"
 
 /**
  * Represents a statement, can be in one of 3 configurations:
@@ -24,16 +24,14 @@
  * 2. A variable assignment.
  * 3. An expression.
  */
-typedef struct stmt
-{
-    f_call * function_call;
-    asmt * assignment;
-    r_asmt *re_asmt;
-    expr * expression;
-    while_node *whileNode;
-    for_node *forNode;
-    if_node *ifNode;
-} stmt;
+typedef struct b_stmt {
+    r_asmt *reassign;
+    f_call *functionCall;
+    if_node *ifBlock;
+    for_node *forLoop;
+    while_node *whileLoop;
+    expr *expression;
+} b_stmt;
 
 
 /**
@@ -44,7 +42,7 @@ typedef struct stmt
  * @param next[OUT] A pointer to the index of the next token not part of the statement.
  * @return A newly created statement.
  */
-stmt * create_stmt(GArray *, unsigned long, unsigned long *);
+b_stmt *create_b_stmt(GArray *, unsigned long, unsigned long *);
 
 /**
  * @brief Creates a JSON formatted string that represents the provided statement.
@@ -52,12 +50,12 @@ stmt * create_stmt(GArray *, unsigned long, unsigned long *);
  * @return The newly created JSON formatted string.
  */
 
-GString * stmt_to_json(stmt *);
+GString *b_stmt_to_json(b_stmt *);
 
 /**
  * @brief A destructor for an statement, frees any associated memory (recursively).
  * @param The statement to destroy
  */
-void destroy_stmt(stmt *);
+void destroy_b_stmt(b_stmt *);
 
-#endif //JOTT_INTERPRETTER_STMT_H
+#endif //JOTT_INTERPRETTER_BSTMT_H
