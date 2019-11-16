@@ -12,6 +12,9 @@
 #include "while_node.h"
 #include "if_node.h"
 
+typedef struct if_node if_node;
+typedef struct for_node for_node;
+typedef struct while_node while_node;
 
 typedef struct b_stmt
 {

@@ -146,7 +146,7 @@ GString * i_expr_to_str(i_expr * iExpr)
         }
         else if(iExpr->LHS_expr != NULL && iExpr->operatorNode != NULL && iExpr->RHS_expr != NULL)
         {
-            g_string_append(retval, i_expr_to_str(iExpr->LHS_expr)->str);
+            g_string_append(retval, i_expr_to_str(iExpr->LHS_expr->int_expression)->str);
             switch (iExpr->operatorNode->opType)
             {
                 case op_add:
@@ -164,8 +164,26 @@ GString * i_expr_to_str(i_expr * iExpr)
                 case op_pow:
                     g_string_append(retval, " ^ ");
                     break;
+                case op_comp_less:
+                    g_string_append(retval, " < ");
+                    break;
+                case op_comp_loe:
+                    g_string_append(retval, " <= ");
+                    break;
+                case op_comp_eq:
+                    g_string_append(retval, " == ");
+                    break;
+                case op_comp_neq:
+                    g_string_append(retval, " != ");
+                    break;
+                case op_comp_goe:
+                    g_string_append(retval, " >= ");
+                    break;
+                case op_comp_greater:
+                    g_string_append(retval, " > ");
+                    break;
             }
-            g_string_append(retval, i_expr_to_str(iExpr->RHS_expr)->str);
+            g_string_append(retval, i_expr_to_str(iExpr->RHS_expr->int_expression)->str);
         }
     }
 
@@ -212,6 +230,24 @@ GString * d_expr_to_str(d_expr * dExpr)
                     break;
                 case op_pow:
                     g_string_append(retval, " ^ ");
+                    break;
+                case op_comp_less:
+                    g_string_append(retval, " < ");
+                    break;
+                case op_comp_loe:
+                    g_string_append(retval, " <= ");
+                    break;
+                case op_comp_eq:
+                    g_string_append(retval, " == ");
+                    break;
+                case op_comp_neq:
+                    g_string_append(retval, " != ");
+                    break;
+                case op_comp_goe:
+                    g_string_append(retval, " >= ");
+                    break;
+                case op_comp_greater:
+                    g_string_append(retval, " > ");
                     break;
             }
             g_string_append(retval, d_expr_to_str(dExpr->RHS_expr)->str);

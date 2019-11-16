@@ -16,6 +16,10 @@
 #include <math.h>
 #include <stdio.h>
 #include <Errors.h>
+#include "b_stmt_list.h"
+#include "if_node.h"
+#include "for_node.h"
+#include "while_node.h"
 
 
 typedef struct string_meta string_meta;
@@ -24,6 +28,13 @@ void * evaluate_function(f_call * fCall);
 void * evaluate_expression(expr * expression);
 gdouble evaluate_double_expression(d_expr * dExpr);
 gint64 evaluate_int_expression(i_expr * iExpr);
+void eval_if(if_node *);
+void eval_for(for_node *);
+void eval_while(while_node *);
+void eval_b_stmt_list(b_stmt_list *);
+void eval_assign(asmt *);
+void eval_reassign(r_asmt *);
+
 
 /**
  * @details This helps to keep track of "temporary" strings, such as printing out the result of a concat or charAt,
@@ -57,16 +68,7 @@ void execute(program * parse_tree)
             }
             else if(current->statement->assignment != NULL)
             {
-                void * retval = evaluate_expression(current->statement->assignment->expression);
-                if(current->statement->assignment->id->type == jstring)
-                {
-                    setGlobalVariable(current->statement->assignment->id->id, ((string_meta *)retval)->data);
-                    free(retval);
-                }
-                else
-                {
-                    setGlobalVariable(current->statement->assignment->id->id, retval);
-                }
+                eval_assign(current->statement->assignment);
             }
             else if(current->statement->function_call != NULL)
             {
@@ -79,6 +81,27 @@ void execute(program * parse_tree)
                     }
                     free(retval);
                 }
+            }
+            else if(current->statement->ifBlock != NULL)
+            {
+                eval_if(current->statement->ifBlock);
+            }
+            else if(current->statement->forLoop != NULL)
+            {
+                eval_for(current->statement->forLoop);
+            }
+            else if(current->statement->whileLoop != NULL)
+            {
+                eval_while(current->statement->whileLoop);
+            }
+            else if(current->statement->reassign != NULL)
+            {
+                eval_reassign(current->statement->reassign);
+            }
+            else
+            {
+                fprintf(stderr, "Runtime Error: invalid statement\n");
+                exit(-1);
             }
         }
     }
@@ -215,25 +238,88 @@ gint64 evaluate_int_expression(i_expr * iExpr)
         }
         else if(iExpr->LHS_expr != NULL && iExpr->operatorNode != NULL && iExpr->RHS_expr != NULL)
         {
-            gint64 lhs = evaluate_int_expression(iExpr->LHS_expr);
-            gint64 rhs = evaluate_int_expression(iExpr->RHS_expr);
-            switch (iExpr->operatorNode->opType)
+            if(iExpr->LHS_expr->double_expression != NULL)
             {
-                case op_add:  return lhs + rhs;
-                case op_sub:  return lhs - rhs;
-                case op_mult: return lhs * rhs;
-                case op_pow:  return (gint64) pow(lhs, rhs);
-                case op_div:
-                    if(rhs != 0)
-                    {
-                        return lhs / rhs;
-                    }
-                    else
-                    {
-                        divide_by_zero_int_error(iExpr->LHS_expr, iExpr->RHS_expr);
-                    }
-                    break;
+                gdouble lhs = evaluate_double_expression(iExpr->LHS_expr->double_expression);
+                gdouble rhs = evaluate_double_expression(iExpr->RHS_expr->double_expression);
+                switch (iExpr->operatorNode->opType)
+                {
+                    case op_comp_less:
+                        return lhs < rhs;
+                    case op_comp_loe:
+                        return lhs <= rhs;
+                    case op_comp_eq:
+                        return lhs == rhs;
+                    case op_comp_neq:
+                        return lhs != rhs;
+                    case op_comp_goe:
+                        return lhs >= rhs;
+                    case op_comp_greater:
+                        return lhs > rhs;
+                    default:
+                        fprintf(stderr, "Bad double operation in i_expr\n");
+                        exit(-1);
+                }
             }
+            else if(iExpr->LHS_expr->string_expression != NULL)
+            {
+                string_meta * lhs = evaluate_string_expression(iExpr->LHS_expr->string_expression);
+                string_meta * rhs = evaluate_string_expression(iExpr->RHS_expr->string_expression);
+                gint64 result = strcmp(lhs->data->str, rhs->data->str);
+                switch (iExpr->operatorNode->opType)
+                {
+                    case op_comp_less:
+                        return result < 0;
+                    case op_comp_loe:
+                        return result <= 0;
+                    case op_comp_eq:
+                        return result == 0;
+                    case op_comp_neq:
+                        return result != 0;
+                    case op_comp_goe:
+                        return result >= 0;
+                    case op_comp_greater:
+                        return result > 0;
+                    default:
+                        fprintf(stderr, "Bad string operation in i_expr\n");
+                        exit(-1);
+                }
+            }
+            else if(iExpr->LHS_expr->int_expression != NULL)
+            {
+                gint64 lhs = evaluate_int_expression(iExpr->LHS_expr->int_expression);
+                gint64 rhs = evaluate_int_expression(iExpr->RHS_expr->int_expression);
+                switch (iExpr->operatorNode->opType)
+                {
+                    case op_add:  return lhs + rhs;
+                    case op_sub:  return lhs - rhs;
+                    case op_mult: return lhs * rhs;
+                    case op_pow:  return (gint64) pow(lhs, rhs);
+                    case op_div:
+                        if(rhs != 0)
+                        {
+                            return lhs / rhs;
+                        }
+                        else
+                        {
+                            divide_by_zero_int_error(iExpr->LHS_expr->int_expression, iExpr->RHS_expr->int_expression);
+                        }
+                        break;
+                    case op_comp_less:
+                        return lhs < rhs;
+                    case op_comp_loe:
+                        return lhs <= rhs;
+                    case op_comp_eq:
+                        return lhs == rhs;
+                    case op_comp_neq:
+                        return lhs != rhs;
+                    case op_comp_goe:
+                        return lhs >= rhs;
+                    case op_comp_greater:
+                        return lhs > rhs;
+                }
+            }
+
         }
     }
     return 0;
@@ -327,6 +413,18 @@ gdouble evaluate_double_expression(d_expr * dExpr)
                     break;
                 case op_pow:
                     return (gdouble) pow(lhs, rhs);
+                case op_comp_less:
+                    return lhs < rhs;
+                case op_comp_loe:
+                    return lhs <= rhs;
+                case op_comp_eq:
+                    return lhs == rhs;
+                case op_comp_neq:
+                    return lhs != rhs;
+                case op_comp_goe:
+                    return lhs >= rhs;
+                case op_comp_greater:
+                    return lhs > rhs;
             }
         }
     }
@@ -361,4 +459,149 @@ void * evaluate_expression(expr * expression)
         }
     }
     return retval;
+}
+
+void eval_if(if_node * ifNode)
+{
+    if(ifNode != NULL)
+    {
+        gint64 result = 0;
+        if(ifNode->conditional != NULL)
+        {
+            result = evaluate_int_expression(ifNode->conditional);
+            if(result != 0)
+            {
+                // Condition was true, execute the first block
+                if(ifNode->true_branch != NULL)
+                {
+                    eval_b_stmt_list(ifNode->true_branch);
+                }
+            }
+            else
+            {
+                if(ifNode->false_branch != NULL)
+                {
+                    eval_b_stmt_list(ifNode->false_branch);
+                }
+            }
+        }
+    }
+}
+
+void eval_for(for_node * forNode)
+{
+    eval_assign(forNode->initializer);
+
+    gint64 result = evaluate_int_expression(forNode->conditional);
+    while(result != 0)
+    {
+        eval_b_stmt_list(forNode->body);
+        eval_reassign(forNode->reassign);
+        result = evaluate_int_expression(forNode->conditional);
+    }
+}
+
+void eval_while(while_node * whileNode)
+{
+    if(whileNode != NULL)
+    {
+        gint64 result = evaluate_int_expression(whileNode->conditional);
+        while(result != 0)
+        {
+            eval_b_stmt_list(whileNode->body);
+            result = evaluate_int_expression(whileNode->conditional);
+        }
+    }
+}
+
+void eval_b_stmt_list(b_stmt_list * bStmtList)
+{
+    for(b_stmt_list * current = bStmtList; current != NULL; current = current->next)
+    {
+        if(current->bStmt != NULL)
+        {
+            if(current->bStmt->expression != NULL)
+            {
+                void * retval = evaluate_expression(current->bStmt->expression);
+                if(retval != NULL)
+                {
+                    if(current->bStmt->expression->string_expression != NULL && ((string_meta *)retval)->is_intermediate)
+                    {
+                        g_string_free(((string_meta *)retval)->data, TRUE);
+                    }
+                    free(retval);
+                }
+            }
+            else if(current->bStmt->functionCall != NULL)
+            {
+                void * retval = evaluate_function(current->bStmt->functionCall);
+                if(retval != NULL)
+                {
+                    if(current->bStmt->functionCall->id->type == jf_str && ((string_meta *)retval)->is_intermediate)
+                    {
+                        g_string_free(((string_meta *)retval)->data, TRUE);
+                    }
+                    free(retval);
+                }
+            }
+            else if(current->bStmt->ifBlock != NULL)
+            {
+                eval_if(current->bStmt->ifBlock);
+            }
+            else if(current->bStmt->forLoop != NULL)
+            {
+                eval_for(current->bStmt->forLoop);
+            }
+            else if(current->bStmt->whileLoop != NULL)
+            {
+                eval_while(current->bStmt->whileLoop);
+            }
+            else if(current->bStmt->reassign != NULL)
+            {
+                eval_reassign(current->bStmt->reassign);
+            }
+            else
+            {
+                fprintf(stderr, "Runtime Error: invalid statement\n");
+                exit(-1);
+            }
+        }
+    }
+}
+
+void eval_assign(asmt * assignment)
+{
+    void * retval = evaluate_expression(assignment->expression);
+    if(assignment->id->type == jstring)
+    {
+        setGlobalVariable(assignment->id->id, ((string_meta *)retval)->data);
+        free(retval);
+    }
+    else
+    {
+        setGlobalVariable(assignment->id->id, retval);
+    }
+}
+
+void eval_reassign(r_asmt * rAsmt)
+{
+    void * retval = evaluate_expression(rAsmt->expression);
+    Type idType;
+
+    if(!findIDType(rAsmt->id->id, &idType))
+    {
+        fprintf(stderr, "Runtime Error: Tried to reassign an undeclared variable\n");
+        exit(-1);
+    }
+
+    if(idType == jstring)
+    {
+        setGlobalVariable(rAsmt->id->id, ((string_meta *)retval)->data);
+        free(retval);
+    }
+    else
+    {
+        setGlobalVariable(rAsmt->id->id, retval);
+    }
+
 }

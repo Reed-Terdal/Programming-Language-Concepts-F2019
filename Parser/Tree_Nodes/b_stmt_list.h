@@ -8,6 +8,8 @@
 #include "b_stmt.h"
 #include <glib.h>
 
+typedef struct b_stmt b_stmt;
+
 typedef struct b_stmt_list
 {
     b_stmt * bStmt;

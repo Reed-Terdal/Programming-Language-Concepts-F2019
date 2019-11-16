@@ -9,7 +9,10 @@
 #include "i_expr.h"
 #include "b_stmt_list.h"
 
-typedef struct b_stmt;
+
+typedef struct b_stmt b_stmt;
+typedef struct b_stmt_list b_stmt_list;
+
 
 typedef struct while_node
 {

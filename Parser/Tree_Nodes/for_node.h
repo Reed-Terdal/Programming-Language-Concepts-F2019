@@ -11,7 +11,8 @@
 #include "b_stmt_list.h"
 #include "r_asmt.h"
 
-typedef struct b_stmt;
+typedef struct b_stmt b_stmt;
+typedef struct b_stmt_list b_stmt_list;
 
 typedef struct for_node
 {

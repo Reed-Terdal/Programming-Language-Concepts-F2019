@@ -76,7 +76,7 @@ int main(int argc, char ** argv)
 
 void printUsage()
 {
-    printf("Usage: ./jot <path-to-jott-program>");
+    printf("Usage: ./jot <path-to-jott-program>\n");
 }
 
 void cleanup(GArray * tokens, program * tree, GTimer * timer, GString * json)

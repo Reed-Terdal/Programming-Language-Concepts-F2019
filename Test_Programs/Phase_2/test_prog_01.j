@@ -5,7 +5,7 @@ Integer y = x ^ 2;
 
 Integer result = 0;
 
-for(Integer idx = 0; idx < x; idx++)
+for(Integer idx = 0; idx < x; idx = idx + 1)
 {
     result = result + x;
 }
@@ -24,7 +24,7 @@ print(x);
 
 while(x > 0)
 {
-    if(x / 2)
+    if(x / 2 == 0)
     {
         print("x is even ");
         print(x);

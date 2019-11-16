@@ -15,7 +15,6 @@ b_stmt_list * create_b_stmt_list(GArray * token_stream, unsigned long index, uns
         fprintf(stderr, "Expected starting bracket in block statement\n");
         exit(-1);
     }
-    (*next)++; // consume the start bracket
     b_stmt_list * ret_val = internal_b_stmt_list_helper(token_stream, index + 1, next);
 
     curToken = &g_array_index(token_stream, Token, *next);
@@ -24,6 +23,7 @@ b_stmt_list * create_b_stmt_list(GArray * token_stream, unsigned long index, uns
         fprintf(stderr, "Expected ending bracket after block statement\n");
         exit(-1);
     }
+    (*next)++; // consume the end bracket
     return ret_val;
 }
 

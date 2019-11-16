@@ -70,7 +70,6 @@ b_stmt * create_b_stmt(GArray * token_stream, unsigned long index, unsigned long
                         {
                             // Expression
                             ret_val->expression = create_expr(token_stream, index, next);
-                            curToken = &g_array_index(token_stream, Token, *next);
                         }
 
                         curToken = &g_array_index(token_stream, Token, *next);
@@ -95,6 +94,7 @@ b_stmt * create_b_stmt(GArray * token_stream, unsigned long index, unsigned long
                 exit(-1);
             }
         }
+            break;
         case t_if:
             ret_val->ifBlock = create_if_node(token_stream, index, next);
             break;

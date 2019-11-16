@@ -19,6 +19,7 @@
 #include "int_node.h"
 #include "operator_node.h"
 #include "id_node.h"
+#include "expr.h"
 
 /**
  * Represents a function call, can have one of 4 configurations:
@@ -32,8 +33,8 @@ typedef struct i_expr
     id_node * id;
     int_node * literal;
     operator_node * operatorNode;
-    struct i_expr * RHS_expr;
-    struct i_expr * LHS_expr;
+    expr * RHS_expr;
+    expr * LHS_expr;
     f_call * function_call;
 }i_expr;
 

@@ -41,59 +41,240 @@ i_expr * internal_i_expr_constructor(i_expr * parent, GArray * token_stream, uns
     /// Start of LHS
     if(parent == NULL)
     {
-        // This is the entrance of our recursive builder
-        new_i_expr->LHS_expr = calloc(1, sizeof(i_expr));
-        if(curToken->type == t_plus || curToken->type == t_minus)
+
+        bool isInteger = false;
+
+        new_i_expr->LHS_expr = calloc(1, sizeof(expr));
+        switch (curToken->type)
         {
-            // We have a sign symbol
-            if(nextToken->type == t_integer)
+            case t_plus:
+            case t_minus:
+                // We have a sign token, should be followed by int or double literal
+                if(nextToken->type == t_floating)
+                {
+                    // Floating, make the LHS expression double
+                    new_i_expr->LHS_expr->double_expression = create_d_expr(token_stream, index, next);
+                }
+                else if(nextToken->type == t_integer)
+                {
+                    isInteger = true;
+                }
+                else
+                {
+                    fprintf(stderr, "Unexpected token following a sign token\n");
+                    exit(-1);
+                }
+                break;
+            case t_integer:
+                isInteger = true;
+                break;
+            case t_floating:
+                new_i_expr->LHS_expr->double_expression = create_d_expr(token_stream, index, next);
+                break;
+            case t_string:
+                new_i_expr->LHS_expr->string_expression = create_s_expr(token_stream, index, next);
+                break;
+            case t_id:
             {
-                new_i_expr->LHS_expr->literal = create_int_node(nextToken, curToken);
-                curIndex += 2;
-                curToken = &g_array_index(token_stream, Token, curIndex);
+                // Need to determine the type of the ID to make a decision
+                Type idType;
+                if(!findIDType(curToken->data, &idType))
+                {
+                    fprintf(stderr, "Undeclared variable used in i_expr\n");
+                    exit(-1);
+                }
+                switch (idType)
+                {
+                    case jf_str:
+                    case jstring:
+                        new_i_expr->LHS_expr->string_expression = create_s_expr(token_stream, index, next);
+                        break;
+                    case jf_double:
+                    case jdouble:
+                        new_i_expr->LHS_expr->double_expression = create_d_expr(token_stream, index, next);
+                        break;
+                    case jf_int:
+                    case jint:
+                        isInteger = true;
+                        break;
+                    default:
+                        fprintf(stderr, "Unexpected ID type in i_expr\n");
+                        exit(-1);
+                }
+            }
+                break;
+            default:
+                fprintf(stderr, "Unexpected token when creating i_expr\n");
+                exit(-1);
+        }
+
+        if(!isInteger)
+        {
+            curToken = &g_array_index(token_stream, Token, *next);
+            switch (curToken->type)
+            {
+                case t_comp_less:
+                case t_comp_loe:
+                case t_comp_eq:
+                case t_comp_neq:
+                case t_comp_goe:
+                case t_comp_greater:
+                    new_i_expr->operatorNode = create_operator(curToken);
+                    (*next)++;
+                    break;
+                default:
+                    fprintf(stderr, "Expected a comparator in i_expr\n");
+                    exit(-1);
+            }
+
+            new_i_expr->RHS_expr = calloc(1, sizeof(expr));
+            // Since we are purely L-R evaluation, the next and ONLY the next token must match the LHS
+            curToken = &g_array_index(token_stream, Token, *next);
+            switch (curToken->type)
+            {
+                case t_plus:
+                case t_minus:
+                    nextToken = &g_array_index(token_stream, Token, *next + 1);
+                    if(nextToken->type == t_floating)
+                    {
+                        new_i_expr->RHS_expr->double_expression = calloc(1, sizeof(d_expr));
+                        new_i_expr->RHS_expr->double_expression->double_literal = create_double_node(curToken, nextToken);
+                        (*next)+=2;
+                    }
+                    else
+                    {
+                        fprintf(stderr, "Unexpected token following sign token in i_expr compare\n");
+                        exit(-1);
+                    }
+                    break;
+                case t_floating:
+                    new_i_expr->RHS_expr->double_expression = calloc(1, sizeof(d_expr));
+                    new_i_expr->RHS_expr->double_expression->double_literal = create_double_node(curToken, NULL);
+                    (*next)++;
+                    break;
+                case t_string:
+                    new_i_expr->RHS_expr->string_expression = calloc(1, sizeof(s_expr));
+                    new_i_expr->RHS_expr->string_expression->literal = create_string_node(curToken);
+                    (*next)++;
+                    break;
+                case t_id:
+                {
+                    Type idType;
+                    if(!findIDType(curToken->data, &idType))
+                    {
+                        fprintf(stderr, "Undeclared ID in RHS of comparison\n");
+                        exit(-1);
+                    }
+                    switch (idType)
+                    {
+                        case jf_str:
+                            new_i_expr->RHS_expr->string_expression = calloc(1, sizeof(s_expr));
+                            new_i_expr->RHS_expr->string_expression->function_call = create_f_call(token_stream, *next, next);
+                            break;
+                        case jf_double:
+                            new_i_expr->RHS_expr->double_expression = calloc(1, sizeof(d_expr));
+                            new_i_expr->RHS_expr->double_expression->function_call = create_f_call(token_stream, *next, next);
+                            break;
+                        case jdouble:
+                            new_i_expr->RHS_expr->double_expression = calloc(1, sizeof(d_expr));
+                            new_i_expr->RHS_expr->double_expression->id = create_id_node(curToken);
+                            (*next)++;
+                            break;
+                        case jstring:
+                            new_i_expr->RHS_expr->string_expression->id = create_id_node(curToken);
+                            (*next)++;
+                            break;
+                        default:
+                            fprintf(stderr, "Unexpected ID type in RHS of comparison\n");
+                            exit(-1);
+                    }
+                }
+                    break;
+                default:
+                    fprintf(stderr, "Unexpected token following comparator in i_expr\n");
+                    exit(-1);
+            }
+
+            if(new_i_expr->LHS_expr->string_expression != NULL && new_i_expr->RHS_expr->string_expression == NULL)
+            {
+                fprintf(stderr, "LHS and RHS expression do not match for comparison\n");
+                exit(-1);
+            }
+            if(new_i_expr->LHS_expr->double_expression != NULL && new_i_expr->RHS_expr->double_expression == NULL)
+            {
+                fprintf(stderr, "LHS and RHS expression do not match for comparison\n");
+                exit(-1);
+            }
+
+            curToken = &g_array_index(token_stream, Token, *next);
+            if (curToken->type == t_end_paren || curToken->type == t_end_stmt || curToken->type == t_comma)
+            {
+                // We are done, return this expression
+                return new_i_expr;
+            }
+            else
+            {
+                // More to go, need to recurse
+                ret_val = internal_i_expr_constructor(new_i_expr, token_stream, *next, next);
             }
         }
         else
         {
-            if(curToken->type == t_integer)
+            new_i_expr->LHS_expr->int_expression = calloc(1, sizeof(i_expr));
+            // This is where we handle the integer case
+            if(curToken->type == t_plus || curToken->type == t_minus)
             {
-                new_i_expr->LHS_expr->literal = create_int_node(curToken, NULL);
-            }
-            else if(curToken->type == t_id)
-            {
-                if(findIDType(curToken->data, &check))
+                // We have a sign symbol
+                if(nextToken->type == t_integer)
                 {
-                    if( check == jint)
-                    {
-                        // We have an already declared int variable
-                        new_i_expr->LHS_expr->id = create_id_node(curToken);
-                    }
-                    else
-                    {
-                        // The ID is not an int
-                        type_error(g_string_new("(Integer Literal, Integer Function)"), check, token_stream, curIndex);
-                    }
-                }
-                else
-                {
-                    // Its an ID, but it hasn't been declared
-                    undeclared_error(curToken->data, token_stream, index);
+                    new_i_expr->LHS_expr->int_expression->literal = create_int_node(nextToken, curToken);
+                    curIndex += 2;
+                    curToken = &g_array_index(token_stream, Token, curIndex);
                 }
             }
             else
             {
-                unexpected_token_error(g_string_new("(Integer Literal, Integer ID, Integer Function)"), curToken->type,
-                                       token_stream, curIndex);
+                if(curToken->type == t_integer)
+                {
+                    new_i_expr->LHS_expr->int_expression->literal = create_int_node(curToken, NULL);
+                }
+                else if(curToken->type == t_id)
+                {
+                    if(findIDType(curToken->data, &check))
+                    {
+                        if( check == jint)
+                        {
+                            // We have an already declared int variable
+                            new_i_expr->LHS_expr->int_expression->id = create_id_node(curToken);
+                        }
+                        else
+                        {
+                            // The ID is not an int
+                            type_error(g_string_new("(Integer Literal, Integer Function)"), check, token_stream, curIndex);
+                        }
+                    }
+                    else
+                    {
+                        // Its an ID, but it hasn't been declared
+                        undeclared_error(curToken->data, token_stream, index);
+                    }
+                }
+                else
+                {
+                    unexpected_token_error(g_string_new("(Integer Literal, Integer ID, Integer Function)"), curToken->type,
+                                           token_stream, curIndex);
+                }
+                curIndex++;
+                curToken = &g_array_index(token_stream, Token, curIndex);
             }
-            curIndex++;
-            curToken = &g_array_index(token_stream, Token, curIndex);
         }
     }
     else
     {
         // This is a recursive call
         // we already have a LHS
-        new_i_expr->LHS_expr = parent;
+        new_i_expr->LHS_expr = calloc(1, sizeof(expr));
+        new_i_expr->LHS_expr->int_expression = parent;
     }
     /// END OF LHS
 
@@ -105,14 +286,21 @@ i_expr * internal_i_expr_constructor(i_expr * parent, GArray * token_stream, uns
         case t_divide:
         case t_minus:
         case t_power:
+        case t_comp_loe:
+        case t_comp_less:
+        case t_comp_goe:
+        case t_comp_eq:
+        case t_comp_neq:
+        case t_comp_greater:
             new_i_expr->operatorNode = create_operator(curToken);
             break;
         case t_end_paren:
         case t_comma:
         case t_end_stmt:
-            // We are done, there is only a LHS, so transfer it to be "this" expression
+            // We are done, there is only an LHS, so transfer it to be "this" expression
             (*next) = curIndex;
-            ret_val = new_i_expr->LHS_expr;
+            ret_val = new_i_expr->LHS_expr->int_expression;
+            free(new_i_expr->LHS_expr);
             free(new_i_expr); // We don't want it anymore, because it only has an LHS node
             break;
         default:
@@ -128,13 +316,14 @@ i_expr * internal_i_expr_constructor(i_expr * parent, GArray * token_stream, uns
         curToken = &g_array_index(token_stream, Token, curIndex);
         nextToken = &g_array_index(token_stream, Token, curIndex + 1);
 
-        new_i_expr->RHS_expr = calloc(1, sizeof(i_expr));
+        new_i_expr->RHS_expr = calloc(1, sizeof(expr));
+        new_i_expr->RHS_expr->int_expression = calloc(1, sizeof(i_expr));
         if (curToken->type == t_plus || curToken->type == t_minus)
         {
             // We have a sign symbol
             if (nextToken->type == t_integer)
             {
-                new_i_expr->RHS_expr->literal = create_int_node(nextToken, curToken);
+                new_i_expr->RHS_expr->int_expression->literal = create_int_node(nextToken, curToken);
                 curIndex += 2;
                 curToken = &g_array_index(token_stream, Token, curIndex);
             }
@@ -143,7 +332,7 @@ i_expr * internal_i_expr_constructor(i_expr * parent, GArray * token_stream, uns
         {
             if (curToken->type == t_integer)
             {
-                new_i_expr->RHS_expr->literal = create_int_node(curToken, NULL);
+                new_i_expr->RHS_expr->int_expression->literal = create_int_node(curToken, NULL);
             }
             else if (curToken->type == t_id)
             {
@@ -152,7 +341,7 @@ i_expr * internal_i_expr_constructor(i_expr * parent, GArray * token_stream, uns
                     if(check == jint)
                     {
                         // We have an already declared int variable
-                        new_i_expr->RHS_expr->id = create_id_node(curToken);
+                        new_i_expr->RHS_expr->int_expression->id = create_id_node(curToken);
                     }
                     else
                     {
@@ -231,10 +420,10 @@ GString * i_expr_to_json(i_expr * iExpr)
             g_string_append(retVal, "null");
         }
 
-        g_string_append(retVal, ", \"LHS_Int_Expression\": ");
+        g_string_append(retVal, ", \"LHS_Expression\": ");
         if(iExpr->LHS_expr != NULL)
         {
-            GString * child = i_expr_to_json(iExpr->LHS_expr);
+            GString * child = expr_to_json(iExpr->LHS_expr);
             g_string_append(retVal, child->str);
             g_string_free(child, TRUE);
         }
@@ -255,10 +444,10 @@ GString * i_expr_to_json(i_expr * iExpr)
             g_string_append(retVal, "null");
         }
 
-        g_string_append(retVal, ", \"RHS_Int_Expression\": ");
+        g_string_append(retVal, ", \"RHS_Expression\": ");
         if(iExpr->RHS_expr != NULL)
         {
-            GString * child = i_expr_to_json(iExpr->RHS_expr);
+            GString * child = expr_to_json(iExpr->RHS_expr);
             g_string_append(retVal, child->str);
             g_string_free(child, TRUE);
         }
@@ -287,11 +476,11 @@ void destroy_i_expr(i_expr * iExpr)
         }
         if(iExpr->LHS_expr != NULL)
         {
-            destroy_i_expr(iExpr->LHS_expr);
+            destroy_expr(iExpr->LHS_expr);
         }
         if(iExpr->RHS_expr != NULL)
         {
-            destroy_i_expr(iExpr->RHS_expr);
+            destroy_expr(iExpr->RHS_expr);
         }
         if(iExpr->literal != NULL)
         {
