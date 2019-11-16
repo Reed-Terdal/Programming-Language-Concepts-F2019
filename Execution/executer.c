@@ -86,6 +86,15 @@ void execute(program * parse_tree)
             else if(current->statement->reassignment!= NULL){
                 eval_r_asmt(current->statement->reassignment);
             }
+            else if(current->statement->ifNode!= NULL){
+                eval_if(current->statement->ifNode);
+            }
+            else if(current->statement->forNode!= NULL){
+                eval_for(current->statement->forNode);
+            }
+            else if(current->statement->whileNode!= NULL){
+                eval_while(current->statement->whileNode);
+            }
         }
     }
     destroyGlobalScope();
