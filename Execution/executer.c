@@ -417,7 +417,6 @@ void * evaluate_expression(expr * expression)
 }
 
 void eval_r_asmt(r_asmt *rAsmt){
-
     if(rAsmt!= NULL){
         Type type;
         gboolean hasType= findIDType(rAsmt->id->id, &type);
