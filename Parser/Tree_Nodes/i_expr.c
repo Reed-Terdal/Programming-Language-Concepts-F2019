@@ -69,11 +69,18 @@ i_expr * internal_i_expr_constructor(i_expr * parent, GArray * token_stream, uns
                     break;
                 case t_id:
                     if (findIDType(curToken->data, &check)) {
-                        if (check == jint) {
-                            new_i_expr->LHS_expr = calloc(1, sizeof(i_expr));
-                            // We have an already declared int variable
-                            new_i_expr->LHS_expr->id = create_id_node(curToken);
-                        } else {
+                        switch (check) {
+                            case jint:
+                            case jf_int:
+                            case jf_double:
+                            case jf_str:
+                            case jdouble:
+                            case jstring:
+                                new_i_expr->LHS_expr = calloc(1, sizeof(i_expr));
+                                // We have an already declared int variable
+                                new_i_expr->LHS_expr->id = create_id_node(curToken);
+                                break;
+                            default:
                             // The ID is not an int
                             type_error(g_string_new("(Integer Literal, Integer Function)"), check, token_stream,
                                        curIndex);

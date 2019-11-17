@@ -2,7 +2,7 @@
 *
 * File Name: b_stmt_list.h
 *
-* Author: Jameson TOper
+* Author: Jameson Toper
 *
 * Created for CS344 on: 11/6/2019
 *
@@ -31,6 +31,8 @@ typedef struct b_stmt_list {
  */
 
 b_stmt_list *create_b_stmt_list(GArray *, unsigned long, unsigned long *);
+
+b_stmt_list *create_b_stmt_list_helper(GArray *, unsigned long, unsigned long *);
 
 /**
  * @brief Creates a JSON formatted string that represents the provided statement list.

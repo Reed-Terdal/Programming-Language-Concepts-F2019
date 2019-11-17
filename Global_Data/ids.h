@@ -29,8 +29,7 @@ typedef enum Type
     jf_int, // Integer function, this ID represents a function that will return an Integer on execution.
     jint, // Integer, this ID represents a literal integer value.
     jdouble, // Double, this ID represents a literal integer value.
-    jstring, // String, this ID represents a literal string value.
-    jcmp
+    jstring // String, this ID represents a literal string value.
 }Type;
 
 /**
@@ -58,13 +57,6 @@ gboolean addIDtoTable(GString * ID, Type type);
  */
 gboolean findIDType(GString * ID, Type * type);
 
-/**
- * Does the existing variable match the given type
- * @param id ID of variable to check
- * @param type  Type to compare to
- * @return
- */
-gboolean matchType(GString *id, Type *type);
 /**
  * @brief This function updates the value of a runtime variable in the global scope.
  * @param id The ID to set the value for.

@@ -21,11 +21,9 @@ else
 }
 print(x);
 
-Integer val = "test" == "test" + 10 > 4;
+Integer val = "test" == "temp" + 2;
 print(val);
 
-val = "test" == "tesy" + 10;
-print(val);
 
 String temp = "test";
 String letter = "";

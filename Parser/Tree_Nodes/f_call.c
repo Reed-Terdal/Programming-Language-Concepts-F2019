@@ -25,7 +25,6 @@ f_call * create_f_call(GArray * tokenStream, unsigned long index, unsigned long 
     // tokenStream[index+n+1] close paren
 
     Token * curToken = &g_array_index(tokenStream, Token, index);
-
     if(curToken->type == t_id)
     {
         Type id_type;
