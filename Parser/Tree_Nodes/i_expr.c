@@ -215,7 +215,7 @@ i_expr * internal_i_expr_constructor(i_expr * parent, GArray * token_stream, uns
             else
             {
                 // More to go, need to recurse
-                ret_val = internal_i_expr_constructor(new_i_expr, token_stream, *next, next);
+                return internal_i_expr_constructor(new_i_expr, token_stream, *next, next);
             }
         }
         else

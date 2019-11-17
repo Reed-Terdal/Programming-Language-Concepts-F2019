@@ -400,7 +400,7 @@ gdouble evaluate_double_expression(d_expr * dExpr)
                 case op_sub:
                     return lhs - rhs;
                 case op_mult:
-                    return lhs - rhs;
+                    return lhs * rhs;
                 case op_div:
                     if(rhs != 0)
                     {
