@@ -8,7 +8,7 @@
 #include "i_expr.h"
 #include "b_stmt_list.h"
 
-typedef struct b_stmt;
+typedef struct b_stmt b_stmt;
 
 typedef struct if_node
 {
