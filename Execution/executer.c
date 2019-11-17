@@ -422,16 +422,20 @@ void eval_r_asmt(r_asmt *rAsmt){
         gboolean hasType= findIDType(rAsmt->id->id, &type);
         if(hasType== FALSE){
             fprintf(stderr, "Identifier has not been detected!");
+            exit(-1);
         }
         else{
             if(rAsmt->expression->double_expression== NULL && type == jdouble){
                 fprintf(stderr, "Expression does not match ID type: jdouble\n");
+                exit(-1);
             }
             else if(rAsmt->expression->int_expression== NULL && type== jint){
                 fprintf(stderr, "Expression does not match ID type: jint\n");
+                exit(-1);
             }
             else if(rAsmt->expression->string_expression== NULL && type== jstring){
                 fprintf(stderr, "Expression does not match ID type: jstring\n");
+                exit(-1);
             }
             else{
                 void * retval = evaluate_expression(rAsmt->expression);
