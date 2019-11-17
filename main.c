@@ -53,7 +53,7 @@ int main(int argc, char ** argv)
 
     /// Execution
     g_timer_start(benchTimer);
-    execute(parseTree->statement_list);
+    execute(parseTree);
     g_timer_stop(benchTimer);
     g_string_append_printf(metadata, "\"Run Time(us)\": %.2f, ", g_timer_elapsed(benchTimer, NULL) * 1000 * 1000);
 
