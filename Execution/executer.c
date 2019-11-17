@@ -83,8 +83,8 @@ void execute(program * parse_tree)
                     free(retval);
                 }
             }
-            else if(current->statement->reassignment!= NULL){
-                eval_r_asmt(current->statement->reassignment);
+            else if(current->statement->re_asmt!= NULL){
+                eval_r_asmt(current->statement->re_asmt);
             }
             else if(current->statement->ifNode!= NULL){
                 eval_if(current->statement->ifNode);
@@ -452,43 +452,43 @@ void eval_r_asmt(r_asmt *rAsmt){
 void eval_b_stmt_list(b_stmt_list *bStmt ){
     for(b_stmt_list * current = bStmt; current != NULL; current = current->next)
     {
-        if(current->bStmt != NULL)
+        if(current->b_statement != NULL)
         {
-            if(current->bStmt->expression != NULL)
+            if(current->b_statement->expression != NULL)
             {
-                void * retval = evaluate_expression(current->bStmt->expression);
+                void * retval = evaluate_expression(current->b_statement->expression);
                 if(retval != NULL)
                 {
-                    if(current->bStmt->expression->string_expression != NULL && ((string_meta *)retval)->is_intermediate)
+                    if(current->b_statement->expression->string_expression != NULL && ((string_meta *)retval)->is_intermediate)
                     {
                         g_string_free(((string_meta *)retval)->data, TRUE);
                     }
                     free(retval);
                 }
             }
-            else if(current->bStmt->functionCall != NULL)
+            else if(current->b_statement->functionCall != NULL)
             {
-                void * retval = evaluate_function(current->bStmt->functionCall);
+                void * retval = evaluate_function(current->b_statement->functionCall);
                 if(retval != NULL)
                 {
-                    if(current->bStmt->functionCall->id->type == jf_str && ((string_meta *)retval)->is_intermediate)
+                    if(current->b_statement->functionCall->id->type == jf_str && ((string_meta *)retval)->is_intermediate)
                     {
                         g_string_free(((string_meta *)retval)->data, TRUE);
                     }
                     free(retval);
                 }
             }
-            else if(current->bStmt->reassign!= NULL){
-                eval_r_asmt(current->bStmt->reassign);
+            else if(current->b_statement->reassign!= NULL){
+                eval_r_asmt(current->b_statement->reassign);
             }
-            else if(current->bStmt->ifBlock!= NULL){
-                eval_if(current->bStmt->ifBlock);
+            else if(current->b_statement->ifBlock!= NULL){
+                eval_if(current->b_statement->ifBlock);
             }
-            else if(current->bStmt->forLoop!= NULL){
-                eval_for(current->bStmt->forLoop);
+            else if(current->b_statement->forLoop!= NULL){
+                eval_for(current->b_statement->forLoop);
             }
-            else if(current->bStmt->whileLoop!= NULL){
-                eval_while(current->bStmt->whileLoop);
+            else if(current->b_statement->whileLoop!= NULL){
+                eval_while(current->b_statement->whileLoop);
             }
         }
     }
@@ -497,7 +497,7 @@ void eval_b_stmt_list(b_stmt_list *bStmt ){
 
 void eval_if(if_node *if_stmt) {
     if(if_stmt != NULL){
-        if(evaluate_expression(if_stmt->expression)!= 0){
+        if(evaluate_int_expression(if_stmt->expression)!= 0){
             eval_b_stmt_list(if_stmt->b_true);
         }
         else{
@@ -522,7 +522,7 @@ void eval_for(for_node *for_stmt){
         }
         while(evaluate_int_expression(for_stmt->conditional)!= 0){
             eval_b_stmt_list(for_stmt->body);
-            eval_r_asmt(for_stmt->incrementor);
+            eval_r_asmt(for_stmt->incrementer);
         }
     }
 }
