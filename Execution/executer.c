@@ -496,7 +496,6 @@ void eval_b_stmt_list(b_stmt_list *bStmt ){
             }
         }
     }
-    destroyGlobalScope();
 }
 
 void eval_if(if_node *if_stmt) {
