@@ -1,5 +1,14 @@
 // This is a comment
 Integer x = 5;
+print(x);
+x = 30;
+print(x);
+if(x == 30)
+{
+    x = 40;
+    print(x);
+}
+print(x);
 
 Integer y = x ^ 2;
 
