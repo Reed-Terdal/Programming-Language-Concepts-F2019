@@ -1,6 +1,14 @@
-//
-// Created by reedt on 11/15/2019.
-//
+/**************************************************************************************************
+*
+* File Name: r_asmt.c
+*
+* Author: Jameson Toper
+*
+* Created for CS344 on: 11/08/2019
+*
+* Purpose: code that provides functions for manipulating r_asmt nodes.
+*
+**************************************************************************************************/
 
 #include "r_asmt.h"
 

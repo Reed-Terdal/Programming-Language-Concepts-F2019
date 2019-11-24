@@ -1,6 +1,14 @@
-//
-// Created by reedt on 11/15/2019.
-//
+/**************************************************************************************************
+*
+* File Name: stmt_list.c
+*
+* Author: Jameson Toper
+*
+* Created for CS344 on: 09/25/2019
+*
+* Purpose: code that provides functions for manipulating statement list nodes.
+*
+**************************************************************************************************/
 
 #include "b_stmt_list.h"
 

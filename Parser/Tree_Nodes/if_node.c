@@ -1,6 +1,14 @@
-//
-// Created by reedt on 11/15/2019.
-//
+/**************************************************************************************************
+*
+* File Name: if_node.c
+*
+* Author: Jameson Toper
+*
+* Created for CS344 on: 11/06/2019
+*
+* Purpose: Code that provides functions for manipulating If statement nodes.
+*
+**************************************************************************************************/
 
 #include "if_node.h"
 

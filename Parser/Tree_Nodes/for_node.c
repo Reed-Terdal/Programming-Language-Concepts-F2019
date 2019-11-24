@@ -1,6 +1,15 @@
-//
-// Created by reedt on 11/15/2019.
-//
+/**************************************************************************************************
+*
+* File Name: for_node.c
+*
+* Author: Jameson Toper
+*
+* Created for CS344 on: 11/06/2019
+*
+* Purpose: code provides functions for manipulating for nodes.
+*
+**************************************************************************************************/
+
 
 #include "for_node.h"
 

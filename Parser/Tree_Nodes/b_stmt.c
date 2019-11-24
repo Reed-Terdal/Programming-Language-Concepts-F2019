@@ -1,6 +1,14 @@
-//
-// Created by reedt on 11/15/2019.
-//
+/**************************************************************************************************
+*
+* File Name: b_stmt.c
+*
+* Author: Jameson Toper
+*
+* Created for CS344 on: 11/06/2019
+*
+* Purpose: code that provides functions for manipulating b_statement nodes.
+*
+**************************************************************************************************/
 
 #include "b_stmt.h"
 
