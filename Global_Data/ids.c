@@ -80,22 +80,31 @@ void setGlobalVariable(GString *id, void *value)
     }
     if (id != NULL)
     {
-        // We know about the variable from the type table
-        runtime_variable *old_val = g_hash_table_lookup(global_scope, id->str);
-        if (old_val != NULL)
+        Type id_type;
+        if(findIDType(id, &id_type))
         {
-            // We already have a value for this, update it
-            old_val->value = value;
-        }
-        else
-        {
-            Type id_type;
-            if (findIDType(id, &id_type))
+            // We know about the variable from the type table
+            runtime_variable *old_val = g_hash_table_lookup(global_scope, id->str);
+            if (old_val != NULL)
             {
-                runtime_variable *new_runtime_var = calloc(1, sizeof(runtime_variable));
-                new_runtime_var->type = id_type;
-                new_runtime_var->value = value;
-                g_hash_table_insert(global_scope, id->str, new_runtime_var);
+
+                // We already have a value for this, update it
+                if(id_type == jstring)
+                {
+                    g_string_free(old_val->value, TRUE);
+                }
+                else
+                {
+                    free(old_val->value);
+                }
+                old_val->value = value;
+            }
+            else
+            {
+                    runtime_variable *new_runtime_var = calloc(1, sizeof(runtime_variable));
+                    new_runtime_var->type = id_type;
+                    new_runtime_var->value = value;
+                    g_hash_table_insert(global_scope, id->str, new_runtime_var);
             }
         }
     }

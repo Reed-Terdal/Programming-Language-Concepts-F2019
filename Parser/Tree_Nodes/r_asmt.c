@@ -10,105 +10,110 @@
 *
 **************************************************************************************************/
 
-
-#include <stdio.h>
 #include "r_asmt.h"
 
-r_asmt *create_r_asmt(GArray *tokenStream, unsigned long index, unsigned long *next) {
+
+r_asmt * create_r_asmt(GArray * token_stream, unsigned long index, unsigned long * next)
+{
     /**
-     * Token[index] is ID
-     * Token[index+1] is '='
-     * Token[index+2 <--> index+n] is expression, need to confirm result is same type
-     * Token[index+n+1] is ';'
+     * Structure:
+     * token_stream[index] -> id
+     * token_stream[index + 1] -> `=`
+     * token_stream[index + 2 ... n] -> expression
      */
 
-    r_asmt *new_asmt = calloc(1, sizeof(r_asmt));
-
-    //Get expression so we know the type
-    // Get the variable in the reassignment
-    Token *curToken = &g_array_index(tokenStream, Token, (*next));
-    // Hold the type of the ID, will compare later
-    Type t;
-    // Does the ID exist, because we cant reassign a non existant assignment
-    if (!findIDType(curToken->data, &t)) {
-        // We tried to redefine a variable that doesnt exit
-        fprintf(stderr, "Syntax Error: Incorrect reassignment");
+    r_asmt * retVal = calloc(1, sizeof(r_asmt));
+    Token * curToken = &g_array_index(token_stream, Token, index);
+    if(curToken->type != t_id)
+    {
+        fprintf(stderr, "Expected first token of reassignment to be an ID\n");
         exit(-1);
     }
-    new_asmt->id = create_id_node(curToken);
-    (*next)++;
-    curToken = &g_array_index(tokenStream, Token, (*next));
-    if (curToken->type != t_assign) {
-        fprintf(stderr, "Syntax Error: Unexpected Token in reassignment");
+
+    Type idType;
+    if(!findIDType(curToken->data, &idType))
+    {
+        fprintf(stderr, "Attempted to reassign variable that has not been declared yet\n");
         exit(-1);
     }
-    (*next)++;
-    new_asmt->expression = create_expr(tokenStream, (*next), next);
+    retVal->id = create_id_node(curToken);
 
-    if (t == jdouble || t == jf_double) {
-        if (new_asmt->expression->double_expression == NULL) {
-            fprintf(stderr, "Syntax Error: Incorrect reassignment, types do not match.");
-            exit(-1);
-        }
-    }
-    if (t == jint || t == jf_int) {
-        if (new_asmt->expression->int_expression == NULL) {
-            fprintf(stderr, "Syntax Error: Incorrect reassignment, types do not match.");
-            exit(-1);
-        }
-    }
-    if (t == jstring || t == jf_str) {
-        if (new_asmt->expression->string_expression == NULL) {
-            fprintf(stderr, "Syntax Error: Incorrect reassignment, types do not match.");
-            exit(-1);
-        }
+    curToken = &g_array_index(token_stream, Token, index + 1);
+    if(curToken->type != t_assign)
+    {
+        fprintf(stderr, "Expected second token of reassignment to be an `=`\n");
+        exit(-1);
     }
 
-    return new_asmt;
-}
+    retVal->expression = create_expr(token_stream, index + 2, next);
 
-/**
- * Genereate json dump of a r_asmt node
- * @param assignment - the reassignment node to convert
- * @return GString with Json representation of the r_asmt node
- */
-GString *r_asmt_to_json(r_asmt *assignment) {
-    GString *retVal = g_string_new(NULL);
-    if (assignment != NULL) {
-        // Print the name of the value to reassign
-        g_string_append(retVal, "{\"Reassignment\": ");
-        if (assignment->id != NULL) {
-            GString *Child = id_node_to_json(assignment->id);
-            g_string_append(retVal, Child->str);
-            g_string_free(Child, TRUE);
-        } else {
-            g_string_append(retVal, "null");
-        }
-
-        // Print the expression that it will be set to
-        g_string_append(retVal, ", \"Expression\": ");
-        if (assignment->expression != NULL) {
-            GString *Child = expr_to_json(assignment->expression);
-            g_string_append(retVal, Child->str);
-            g_string_free(Child, TRUE);
-        } else {
-            g_string_append(retVal, "null");
-        }
-        g_string_append_c(retVal, '}');
-    } else {
-        g_string_append(retVal, "null");
+    if(idType == jint && retVal->expression->int_expression == NULL)
+    {
+        fprintf(stderr, "Reassignment expression type does not match variable type\n");
+        exit(-1);
     }
+    if(idType == jdouble && retVal->expression->double_expression == NULL)
+    {
+        fprintf(stderr, "Reassignment expression type does not match variable type\n");
+        exit(-1);
+    }
+    if(idType == jstring && retVal->expression->string_expression == NULL)
+    {
+        fprintf(stderr, "Reassignment expression type does not match variable type\n");
+        exit(-1);
+    }
+
     return retVal;
 }
 
-void destroy_r_asmt(r_asmt *assignment) {
-    if (assignment != NULL) {
-        if (assignment->expression != NULL) {
-            destroy_expr(assignment->expression);
+
+GString * r_asmt_to_json(r_asmt * rAsmt)
+{
+    GString * retval = g_string_new(NULL);
+
+    if(rAsmt != NULL)
+    {
+        g_string_append(retval, "{\"ID\": ");
+        if(rAsmt->id != NULL)
+        {
+            GString * child = id_node_to_json(rAsmt->id);
+            g_string_append(retval, child->str);
+            g_string_free(child, TRUE);
         }
-        if (assignment->id != NULL) {
-            destroy_id_node(assignment->id);
+        else
+        {
+            g_string_append(retval, "null");
         }
-        free(assignment);
+
+        g_string_append(retval, ", \"Expression\": ");
+        if(rAsmt->expression != NULL)
+        {
+            GString * child = expr_to_json(rAsmt->expression);
+            g_string_append(retval, child->str);
+            g_string_free(child, TRUE);
+        }
+        else
+        {
+            g_string_append(retval, "null");
+        }
+        g_string_append_c(retval, '}');
+    }
+    return retval;
+}
+
+
+void destroy_r_asmt(r_asmt * rAsmt)
+{
+    if(rAsmt != NULL)
+    {
+        if(rAsmt->id != NULL)
+        {
+            destroy_id_node(rAsmt->id);
+        }
+        if(rAsmt->expression != NULL)
+        {
+            destroy_expr(rAsmt->expression);
+        }
+        free(rAsmt);
     }
 }

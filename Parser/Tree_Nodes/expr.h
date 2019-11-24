@@ -17,6 +17,9 @@
 #include "d_expr.h"
 #include "s_expr.h"
 
+typedef struct i_expr i_expr;
+typedef struct d_expr d_expr;
+
 /**
  * @note only one can be non-NULL
  */

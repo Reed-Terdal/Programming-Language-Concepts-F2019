@@ -21,7 +21,7 @@
 
 
 typedef struct d_expr d_expr;
-
+typedef struct i_expr i_expr;
 
 /**
  * @brief This prints a message about a violation to the type system including the expected types, received type,

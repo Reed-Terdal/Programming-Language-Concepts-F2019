@@ -89,6 +89,29 @@ expr * create_expr(GArray * token_stream, unsigned long index, unsigned long * n
             exit(-1);
     }
 
+    if(new_expr->int_expression == NULL)
+    {
+        // We don't currently have an int expression, if we see a comparison, we need to back-track and make it an int
+        // expression
+        Token *check = &g_array_index(token_stream, Token, *next);
+        switch (check->type)
+        {
+            case t_comp_less:
+            case t_comp_loe:
+            case t_comp_eq:
+            case t_comp_neq:
+            case t_comp_goe:
+            case t_comp_greater:
+                // Need to backtrack
+                destroy_expr(new_expr);
+                new_expr = calloc(1, sizeof(expr));
+                new_expr->int_expression = create_i_expr(token_stream, index, next);
+                break;
+            default:
+                // Don't need to backtrack
+                break;
+        }
+    }
 
     return new_expr;
 }
