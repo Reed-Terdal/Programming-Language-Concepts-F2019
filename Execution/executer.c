@@ -105,7 +105,7 @@ void execute(program * parse_tree)
             }
         }
     }
-    destroyGlobalScope();
+    destroyRuntimeScopes();
 }
 
 /**
@@ -222,7 +222,7 @@ gint64 evaluate_int_expression(i_expr * iExpr)
         }
         else if(iExpr->id != NULL)
         {
-            runtime_variable * value = getGlobalVariable(iExpr->id->id);
+            runtime_variable * value = getRuntimeVariable(iExpr->id->id);
             if(value != NULL && value->value != NULL)
             {
                 return *((gint64 *)value->value);
@@ -343,7 +343,7 @@ string_meta * evaluate_string_expression(s_expr * sExpr)
         }
         else if(sExpr->id != NULL)
         {
-            runtime_variable * variable = getGlobalVariable(sExpr->id->id);
+            runtime_variable * variable = getRuntimeVariable(sExpr->id->id);
             if(variable != NULL && variable->value != NULL)
             {
                 string_meta * final = calloc(1, sizeof(string_meta));
@@ -375,7 +375,7 @@ gdouble evaluate_double_expression(d_expr * dExpr)
         }
         else if(dExpr->id != NULL)
         {
-            runtime_variable * variable = getGlobalVariable(dExpr->id->id);
+            runtime_variable * variable = getRuntimeVariable(dExpr->id->id);
             if(variable != NULL && variable->value != NULL)
             {
                 return *((gdouble *)variable->value);
@@ -574,12 +574,12 @@ void eval_assign(asmt * assignment)
     void * retval = evaluate_expression(assignment->expression);
     if(assignment->id->type == jstring)
     {
-        setGlobalVariable(assignment->id->id, ((string_meta *)retval)->data);
+        setRuntimeVariable(assignment->id->id, ((string_meta *) retval)->data);
         free(retval);
     }
     else
     {
-        setGlobalVariable(assignment->id->id, retval);
+        setRuntimeVariable(assignment->id->id, retval);
     }
 }
 
@@ -596,12 +596,12 @@ void eval_reassign(r_asmt * rAsmt)
 
     if(idType == jstring)
     {
-        setGlobalVariable(rAsmt->id->id, ((string_meta *)retval)->data);
+        setRuntimeVariable(rAsmt->id->id, ((string_meta *) retval)->data);
         free(retval);
     }
     else
     {
-        setGlobalVariable(rAsmt->id->id, retval);
+        setRuntimeVariable(rAsmt->id->id, retval);
     }
 
 }
