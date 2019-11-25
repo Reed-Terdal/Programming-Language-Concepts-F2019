@@ -26,12 +26,12 @@ enum op_type
     op_mult,
     op_div,
     op_pow,
-    op_greater,
-    op_goe,
-    op_less,
-    op_loe,
-    op_eq,
-    op_neq
+    op_comp_less,
+    op_comp_loe, // less than or equal to
+    op_comp_eq, // equal
+    op_comp_neq, // not equal
+    op_comp_goe, // greater than or equal to
+    op_comp_greater
 };
 
 typedef struct operator_node

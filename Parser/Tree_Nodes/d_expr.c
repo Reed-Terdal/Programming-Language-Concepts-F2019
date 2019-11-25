@@ -108,6 +108,12 @@ d_expr * internal_d_expr_constructor(d_expr * parent, GArray * token_stream, uns
         case t_end_paren:
         case t_comma:
         case t_end_stmt:
+        case t_comp_greater:    // Comparisons are handled in i_expr, so we need to backtrack
+        case t_comp_goe:        // Comparisons are handled in i_expr, so we need to backtrack
+        case t_comp_eq:         // Comparisons are handled in i_expr, so we need to backtrack
+        case t_comp_neq:        // Comparisons are handled in i_expr, so we need to backtrack
+        case t_comp_loe:        // Comparisons are handled in i_expr, so we need to backtrack
+        case t_comp_less:       // Comparisons are handled in i_expr, so we need to backtrack
             // We are done, there is only a LHS, so transfer it to be "this" expression
             (*next) = curIndex;
             ret_val = new_d_expr->LHS_expr;
@@ -172,16 +178,24 @@ d_expr * internal_d_expr_constructor(d_expr * parent, GArray * token_stream, uns
             curIndex++;
             curToken = &g_array_index(token_stream, Token, curIndex);
         }
-        if (curToken->type == t_end_paren || curToken->type == t_end_stmt || curToken->type == t_comma)
+        switch (curToken->type)
         {
-            // We are done, return this expression
-            (*next) = curIndex;
-            ret_val = new_d_expr;
-        }
-        else
-        {
-            // More to go, need to recurse
-            ret_val = internal_d_expr_constructor(new_d_expr, token_stream, curIndex, next);
+            case t_end_paren:
+            case t_end_stmt:
+            case t_comma:
+            case t_comp_less:
+            case t_comp_loe:
+            case t_comp_eq:
+            case t_comp_neq:
+            case t_comp_goe:
+            case t_comp_greater:
+                // We are done
+                (*next) = curIndex;
+                ret_val = new_d_expr;
+                break;
+            default:
+                // Recurse more
+                ret_val = internal_d_expr_constructor(new_d_expr, token_stream, curIndex, next);
         }
     }
     /// END OF RHS

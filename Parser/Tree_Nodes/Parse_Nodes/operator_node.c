@@ -37,23 +37,23 @@ operator_node * create_operator(Token * opToken)
             case t_power:
                 retVal->opType = op_pow;
                 break;
-            case t_comp_greater:
-                retVal->opType = op_greater;
-                break;
-            case t_comp_goe:
-                retVal->opType = op_goe;
+            case t_comp_eq:
+                retVal->opType = op_comp_eq;
                 break;
             case t_comp_neq:
-                retVal->opType = op_neq;
+                retVal->opType = op_comp_neq;
                 break;
-            case t_comp_eq:
-                retVal->opType = op_eq;
+            case t_comp_greater:
+                retVal->opType = op_comp_greater;
+                break;
+            case t_comp_goe:
+                retVal->opType = op_comp_goe;
                 break;
             case t_comp_less:
-                retVal->opType = op_less;
+                retVal->opType = op_comp_less;
                 break;
             case t_comp_loe:
-                retVal->opType = op_loe;
+                retVal->opType = op_comp_loe;
                 break;
             default:
                 fprintf(stderr, "Syntax Error: Unexpected Token when creating operator");
@@ -86,23 +86,23 @@ GString * operator_to_json(operator_node * anOperator)
             case op_pow:
                 g_string_append(retval, "{\"Type\": \"^\"}");
                 break;
-            case op_greater:
-                g_string_append(retval, "{\"Type\": \">\"}");
-                break;
-            case op_goe:
-                g_string_append(retval, "{\"Type\": \">=\"}");
-                break;
-            case op_less:
-                g_string_append(retval, "{\"Type\": \"<\"}");
-                break;
-            case op_loe:
-                g_string_append(retval, "{\"Type\": \"<=\"}");
-                break;
-            case op_eq:
+            case op_comp_eq:
                 g_string_append(retval, "{\"Type\": \"==\"}");
                 break;
-            case op_neq:
+            case op_comp_neq:
                 g_string_append(retval, "{\"Type\": \"!=\"}");
+                break;
+            case op_comp_goe:
+                g_string_append(retval, "{\"Type\": \">=\"}");
+                break;
+            case op_comp_greater:
+                g_string_append(retval, "{\"Type\": \">\"}");
+                break;
+            case op_comp_loe:
+                g_string_append(retval, "{\"Type\": \"<=\"}");
+                break;
+            case op_comp_less:
+                g_string_append(retval, "{\"Type\": \"<\"}");
                 break;
             default:
                 g_string_append(retval, "{\"Type\": null}");

@@ -15,8 +15,12 @@
 
 #include "f_call.h"
 #include "asmt.h"
+#include "expr.h"
 #include <glib.h>
-#include "b_stmt_list.h"
+#include "if_node.h"
+#include "for_node.h"
+#include "while_node.h"
+#include "r_asmt.h"
 
 /**
  * Represents a statement, can be in one of 3 configurations:
@@ -28,12 +32,12 @@ typedef struct stmt
 {
     f_call * function_call;
     asmt * assignment;
-    r_asmt *re_asmt;
+    r_asmt * reassign;
     expr * expression;
-    while_node *whileNode;
-    for_node *forNode;
-    if_node *ifNode;
-} stmt;
+    if_node * ifBlock;
+    for_node * forLoop;
+    while_node * whileLoop;
+}stmt;
 
 
 /**

@@ -1,9 +1,9 @@
 #include <stdio.h>
-#include "executer.h"
 #include <glib.h>
 #include "Token.h"
 #include "scanner.h"
 #include "parser.h"
+#include "executer.h"
 #include <errno.h>
 
 /**
@@ -76,7 +76,7 @@ int main(int argc, char ** argv)
 
 void printUsage()
 {
-    printf("Usage: ./jott <path-to-jott-program>");
+    printf("Usage: ./jot <path-to-jott-program>\n");
 }
 
 void cleanup(GArray * tokens, program * tree, GTimer * timer, GString * json)
