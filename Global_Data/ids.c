@@ -72,7 +72,7 @@ void initialize_type_table()
 }
 
 
-void setGlobalVariable(GString *id, void *value)
+void setRuntimeVariable(GString *id, void *value)
 {
     if (global_scope == NULL)
     {
@@ -110,7 +110,7 @@ void setGlobalVariable(GString *id, void *value)
     }
 }
 
-runtime_variable * getGlobalVariable(GString * id)
+runtime_variable * getRuntimeVariable(GString * id)
 {
     runtime_variable * retval = NULL;
     if (global_scope == NULL)
@@ -124,7 +124,7 @@ runtime_variable * getGlobalVariable(GString * id)
     return retval;
 }
 
-void destroyGlobalScope()
+void destroyRuntimeScopes()
 {
     if(global_scope != NULL)
     {

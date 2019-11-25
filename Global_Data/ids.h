@@ -16,6 +16,7 @@
 #define JOTT_INTERPRETTER_IDS_H
 
 #include <glib.h>
+#include "p_list.h"
 
 /**
  * This enum defines all the values that an ID can have.
@@ -58,22 +59,79 @@ gboolean addIDtoTable(GString * ID, Type type);
 gboolean findIDType(GString * ID, Type * type);
 
 /**
- * @brief This function updates the value of a runtime variable in the global scope.
+ * @brief This function updates the value of a runtime variable in the current scope.
  * @param id The ID to set the value for.
  * @param value The value to set for the ID.
  */
-void setGlobalVariable(GString * id, void * value);
+void setRuntimeVariable(GString * id, void * value);
 
 /**
- * @brief This gets the current value of a runtime variable in the Global scope.
+ * @brief This gets the current value of a runtime variable in the current scope.
  * @param id The ID of the variable to get the value for.
  * @return The value of the given ID.
  */
-runtime_variable * getGlobalVariable(GString * id);
+runtime_variable * getRuntimeVariable(GString * id);
 
 /**
  * @brief This is a clean up utility that frees all the memory associated with runtime variables in the Global scope.
  */
-void destroyGlobalScope();
+void destroyRuntimeScopes();
+
+/**
+ * @brief Used to create a new function. Used IN PLACE OF addIDToTable for functions specifically
+ * @param function_id The id of the function to create a new prototype for
+ * @param types[IN] A GArray which contains `Type` members (see above).
+ *                  It should only use jint, jdouble, jstring, and jt_INVALID (for wildcards, ie print)
+ * @note This will exit with an error if the function_id already exists, or if there is a bad `Type` in the types array.
+ *                  A valid array should always be passed in, it can be empty if no parameters are required.
+ *                  This function will take ownership of the types parameter, it will be freed after execution is complete.
+ */
+void addFunctionPrototype(GString * function_id, GArray * types);
+
+/**
+ * @brief This is used to validate the parameters to a function call.
+ * @param function_id The ID of the function being called
+ * @param params The p_list that will be passed into the function call
+ * @note This will exit with an error if the function_id does not exist or if the params does not match the prototype
+ */
+void checkFunctionParameters(GString * function_id, p_list * params);
+
+/**
+ * @brief Used to switch the current type table to be function scope first and then global scope
+ * @param function_id The ID of the function being entered
+ * @note Used exclusively during the parsing phase.
+ *       Will exit with an error if the function_id does not exist yet or if it is already in another function scope.
+ * @warning Should ALWAYS be followed by a call to `parsing_enter_function_scope` when done parsing the function body.
+ */
+void parsing_enter_function_scope(GString * function_id);
+
+/**
+ * @brief Used to exit the local scoped type table of a function during parsing
+ * @note Used exclusively during the parsing phase.
+ *       Will exit with an error if it was not currently in a function scope.
+ */
+void parsing_exit_function_scope();
+
+/**
+ * @brief Used during runtime to create a new scope of local variables in a function call
+ * @param function_id The ID of the function being entered
+ * @note Used exclusively during the execution phase.
+ *       Can be called repeatedly before calling `runtime_exit_function_scope`.
+ *       Will exit with an error if the function_id does not exist.
+ *       Should always be followed by a call to `runtime_exit_function_scope` after the function returns.
+ */
+void runtime_enter_function_scope(GString * function_id);
+
+/**
+ * @brief Used during runtime to exit a function scope and free any runtime variables belonging to it.
+ * @note Used exclusively during the execution phase.
+ *       Will exit with an error if not already in a function scope.
+ */
+void runtime_exit_function_scope();
+
+/**
+ * @brief This is a clean up utility called after execution to free all type tables and function prototype information.
+ */
+void destroy_type_tables();
 
 #endif //JOTT_INTERPRETTER_IDS_H
