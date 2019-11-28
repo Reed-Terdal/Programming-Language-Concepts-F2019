@@ -57,7 +57,8 @@ typedef enum tokenType
     t_if,
     t_else,
     t_start_bracket,
-    t_end_bracket
+    t_end_bracket,
+    t_type_void
 }tokenType;
 
 /**
