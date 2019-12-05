@@ -34,6 +34,15 @@ typedef enum Type
 }Type;
 
 /**
+ * Each user-defined function should have named parameters, when adding a function prototype the GArray should contain these elements so that the params can be added to the type table automatically
+ */
+typedef struct named_parameter
+{
+    GString * name;
+    Type type;
+}named_parameter;
+
+/**
  * This struct represents a single runtime variable that will be stored in either the global scope or a local scope.
  */
 typedef struct runtime_variable
@@ -80,13 +89,14 @@ void destroyRuntimeScopes();
 /**
  * @brief Used to create a new function. Used IN PLACE OF addIDToTable for functions specifically
  * @param function_id The id of the function to create a new prototype for
- * @param types[IN] A GArray which contains `Type` members (see above).
+ * @param types[IN] A GArray which contains `named_parameter` members (see above).
  *                  It should only use jint, jdouble, jstring, and jt_INVALID (for wildcards, ie print)
+ * @param retval The return type of the function, should be jf_int, jf_double, jf_str and jf_void
  * @note This will exit with an error if the function_id already exists, or if there is a bad `Type` in the types array.
  *                  A valid array should always be passed in, it can be empty if no parameters are required.
  *                  This function will take ownership of the types parameter, it will be freed after execution is complete.
  */
-void addFunctionPrototype(GString * function_id, GArray * types);
+void addFunctionPrototype(GString * function_id, GArray * types, Type retval);
 
 /**
  * @brief This is used to validate the parameters to a function call.
