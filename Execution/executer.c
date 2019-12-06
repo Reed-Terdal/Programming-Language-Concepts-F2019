@@ -34,7 +34,9 @@ void eval_while(while_node *);
 void eval_b_stmt_list(b_stmt_list *);
 void eval_assign(asmt *);
 void eval_reassign(r_asmt *);
+void *eval_f_stmt(f_stmt *func);
 
+static GHashTable *f_map; //how to find all the code for a specific function
 
 /**
  * @details This helps to keep track of "temporary" strings, such as printing out the result of a concat or charAt,
@@ -97,6 +99,14 @@ void execute(program * parse_tree)
             else if(current->statement->reassign != NULL)
             {
                 eval_reassign(current->statement->reassign);
+            }
+            else if(current->statement->f_node!= NULL){
+                if(f_map == NULL){
+                    f_map= g_hash_table_new(g_str_hash, g_str_equal);
+                }
+                g_hash_table_insert(f_map,
+                        current->statement->f_node->func_id->id->str,
+                        current->statement->f_node->body);
             }
             else
             {
@@ -202,9 +212,72 @@ void * evaluate_function(f_call * fCall)
                     }
                 }
             }
+            else{
+                if(f_map == NULL){
+                    fprintf(stderr, "Error: you never initialized the funtcion map!");
+                    exit(-1);
+                }
+                else{
+                    GArray *paramVals= g_array_new(TRUE, TRUE, sizeof(void *));
+                    p_list *parameters= fCall->params;
+                    while(parameters!= NULL){
+                        void *retval= evaluate_expression(parameters->expression);
+                        if(parameters->expression->string_expression!= NULL){
+                            g_array_append_val(paramVals, ((string_meta *) retval)->data);
+                            free(retval);
+                        }
+                        else{
+                            g_array_append_val(paramVals,retval);
+                        }
+                        parameters= parameters->next;
+                    }
+                    runtime_enter_function_scope(fCall->id->id, paramVals);
+                    g_array_free(paramVals, TRUE);
+                    void *retVal= eval_f_stmt(g_hash_table_lookup(f_map,fCall->id->id->str));
+                    runtime_exit_function_scope();
+                    return retVal;
+                }
+            }
         }
     }
     return NULL;
+}
+
+void *eval_f_stmt(f_stmt *func) {
+    for(f_stmt * current= func; current!= NULL; current= current->next){
+        if(current->statement!= NULL) {
+            if (current->statement->expression != NULL) {
+                evaluate_expression(current->statement->expression);
+            }
+            else if (current->statement->function_call != NULL) {
+                evaluate_function(current->statement->function_call);
+            }
+            else if (current->statement->whileLoop!= NULL) {
+                eval_while(current->statement->whileLoop);
+            }
+            else if (current->statement->forLoop!= NULL) {
+                eval_for(current->statement->forLoop);
+            }
+            else if (current->statement->ifBlock!= NULL) {
+                eval_if(current->statement->ifBlock);
+            }
+            else if(current->statement->reassign!= NULL){
+                eval_reassign(current->statement->reassign);
+            }
+            else if(current->statement->assignment!= NULL){
+                eval_assign(current->statement->assignment);
+            }
+            else{
+                fprintf(stderr, "Invalid Statement!");
+            }
+        }
+        else if(current->ret_val!= NULL){
+            return evaluate_expression(current->ret_val);
+        }
+        else{
+            fprintf(stderr, "Don't know how you got here, but you messed up!");
+        }
+    }
 }
 
 /**

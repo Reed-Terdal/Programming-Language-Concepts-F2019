@@ -21,6 +21,7 @@
 #include "for_node.h"
 #include "while_node.h"
 #include "r_asmt.h"
+#include "function_node.h"
 
 /**
  * Represents a statement, can be in one of 3 configurations:
@@ -37,6 +38,7 @@ typedef struct stmt
     if_node * ifBlock;
     for_node * forLoop;
     while_node * whileLoop;
+    function_node *f_node;
 }stmt;
 
 
