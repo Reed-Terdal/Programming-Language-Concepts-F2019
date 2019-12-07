@@ -126,16 +126,19 @@ void setRuntimeVariable(GString *id, void *value)
             fprintf(stderr, "Cannot set variable for ID that does not exist");
             exit(-1);
         }
-        named_scope *local_scope = g_queue_peek_head(runtime_scope_stack);
         GHashTable *table_to_update = global_scope;
 
-        if(local_scope != NULL)
+        if(runtime_scope_stack != NULL)
         {
-            // We are in a function
-            if(g_hash_table_contains(active_function_type_table, id->str))
+            named_scope *local_scope = g_queue_peek_head(runtime_scope_stack);
+            if(local_scope != NULL)
             {
-                // The ID is in the function
-                table_to_update = local_scope->local_scope;
+                // We are in a function
+                if(g_hash_table_contains(active_function_type_table, id->str))
+                {
+                    // The ID is in the function
+                    table_to_update = local_scope->local_scope;
+                }
             }
         }
 
@@ -172,16 +175,20 @@ runtime_variable * getRuntimeVariable(GString * id)
     }
     if(id != NULL)
     {
-        named_scope * current_scope = g_queue_peek_head(runtime_scope_stack);
         GHashTable *table_to_use = global_scope;
 
-        if(current_scope != NULL)
+        if(runtime_scope_stack != NULL)
         {
-            if(g_hash_table_contains(current_scope->local_scope, id->str))
+            named_scope * current_scope = g_queue_peek_head(runtime_scope_stack);
+            if(current_scope != NULL)
             {
-                table_to_use = current_scope->local_scope;
+                if(g_hash_table_contains(current_scope->local_scope, id->str))
+                {
+                    table_to_use = current_scope->local_scope;
+                }
             }
         }
+
 
         retval = g_hash_table_lookup(table_to_use, id->str);
     }
@@ -221,6 +228,7 @@ void initializeFunctionPrototypes()
     if(function_prototypes == NULL)
     {
         function_prototypes = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
+        function_type_tables = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
 
         GArray * builtin_proto = g_array_new(true, true, sizeof(named_parameter));
         named_parameter param = {NULL, jt_INVALID};
@@ -338,12 +346,14 @@ void checkFunctionParameters(GString * function_id, p_list * params)
         else
         {
             fprintf(stderr, "Parsing Error: Param contains invalid expression");
+            exit(-1);
         }
         current = current->next;
     }
     if(current != NULL)
     {
         fprintf(stderr, "Function call has too many parameters for prototype");
+        exit(-1);
     }
 }
 
@@ -417,7 +427,7 @@ void parsing_exit_function_scope()
 }
 
 
-void runtime_enter_function_scope(GString * function_id)
+void runtime_enter_function_scope(GString * function_id, GArray * paramValues)
 {
     if(function_id == NULL)
     {
@@ -437,6 +447,14 @@ void runtime_enter_function_scope(GString * function_id)
     g_queue_push_head(runtime_scope_stack, local_scope);
 
     active_function_type_table = g_hash_table_lookup(function_type_tables, function_id->str);
+
+    // Add in the params
+    GArray * paramNames = g_hash_table_lookup(function_prototypes, function_id->str);
+    for(int idx = 0; idx < paramValues->len; idx++)
+    {
+        named_parameter param = g_array_index(paramNames, named_parameter, idx);
+        setRuntimeVariable(param.name, g_array_index(paramValues, void *, idx));
+    }
 }
 
 
@@ -525,4 +543,9 @@ void destroy_type_tables()
     }
     g_queue_free(runtime_scope_stack);
     runtime_scope_stack = NULL;
+}
+
+gboolean in_function_scope()
+{
+    return active_function_type_table_name != NULL;
 }

@@ -47,15 +47,16 @@
 #line 1 "gperf_generator.txt"
 
 #include "Token.h"
-#line 5 "gperf_generator.txt"
+#line 4 "gperf_generator.txt"
+
 struct keyword_lookup {char *name; int type;};
 
-#define TOTAL_KEYWORDS 9
+#define TOTAL_KEYWORDS 10
 #define MIN_WORD_LENGTH 2
 #define MAX_WORD_LENGTH 7
 #define MIN_HASH_VALUE 2
-#define MAX_HASH_VALUE 14
-/* maximum key range = 13, duplicates = 0 */
+#define MAX_HASH_VALUE 16
+/* maximum key range = 15, duplicates = 0 */
 
 #ifdef __GNUC__
 __inline
@@ -69,32 +70,32 @@ hash (register const char *str, register size_t len)
 {
     static unsigned char asso_values[] =
             {
-                    15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-                    15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-                    15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-                    15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-                    15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-                    15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-                    15, 15, 15, 15, 15, 15, 15, 15,  5, 15,
-                    15, 15, 15,  0, 15, 15, 15, 15, 15, 15,
-                    15, 15, 15,  0, 15, 15, 10, 15, 15, 15,
-                    15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-                    15,  5,  0, 15, 15,  0, 15, 15, 15, 15,
-                    15, 15, 15, 15, 15, 15, 15, 15,  0,  0,
-                    15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-                    15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-                    15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-                    15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-                    15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-                    15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-                    15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-                    15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-                    15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-                    15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-                    15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-                    15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-                    15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-                    15, 15, 15, 15, 15, 15
+                    17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
+                    17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
+                    17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
+                    17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
+                    17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
+                    17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
+                    17, 17, 17, 17, 17, 17, 17, 17, 10, 17,
+                    17, 17, 17,  0, 17, 17, 17, 17, 17, 17,
+                    17, 17, 17,  5, 17, 17, 10, 17, 17, 17,
+                    17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
+                    17,  5,  0, 17, 17,  0, 17, 17, 17, 17,
+                    17, 17, 17, 17,  0, 17, 17, 17,  0,  0,
+                    17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
+                    17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
+                    17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
+                    17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
+                    17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
+                    17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
+                    17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
+                    17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
+                    17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
+                    17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
+                    17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
+                    17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
+                    17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
+                    17, 17, 17, 17, 17, 17
             };
     return len + asso_values[(unsigned char)str[0]];
 }
@@ -113,19 +114,22 @@ in_word_set (register const char *str, register size_t len)
                     {"void", t_type_void},
 #line 11 "gperf_generator.txt"
                     {"while", t_while},
-#line 9 "gperf_generator.txt"
-                    {"String", t_type_string},
+#line 16 "gperf_generator.txt"
+                    {"return", t_return},
 #line 8 "gperf_generator.txt"
                     {"Integer", t_type_integer},
                     {""},
 #line 13 "gperf_generator.txt"
                     {"else", t_else},
                     {""},
-#line 7 "gperf_generator.txt"
-                    {"Double", t_type_double},
+#line 9 "gperf_generator.txt"
+                    {"String", t_type_string},
                     {""}, {""},
 #line 15 "gperf_generator.txt"
-                    {"Void", t_type_void}
+                    {"Void", t_type_void},
+                    {""},
+#line 7 "gperf_generator.txt"
+                    {"Double", t_type_double}
             };
 
     if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)

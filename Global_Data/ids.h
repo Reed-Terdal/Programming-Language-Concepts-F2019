@@ -125,12 +125,13 @@ void parsing_exit_function_scope();
 /**
  * @brief Used during runtime to create a new scope of local variables in a function call
  * @param function_id The ID of the function being entered
+ * @param paramValues A GArray pointer containing void pointers to the values for the parameters to a function
  * @note Used exclusively during the execution phase.
  *       Can be called repeatedly before calling `runtime_exit_function_scope`.
  *       Will exit with an error if the function_id does not exist.
  *       Should always be followed by a call to `runtime_exit_function_scope` after the function returns.
  */
-void runtime_enter_function_scope(GString * function_id);
+void runtime_enter_function_scope(GString * function_id, GArray * paramValues);
 
 /**
  * @brief Used during runtime to exit a function scope and free any runtime variables belonging to it.
@@ -143,5 +144,7 @@ void runtime_exit_function_scope();
  * @brief This is a clean up utility called after execution to free all type tables and function prototype information.
  */
 void destroy_type_tables();
+
+gboolean in_function_scope();
 
 #endif //JOTT_INTERPRETTER_IDS_H
