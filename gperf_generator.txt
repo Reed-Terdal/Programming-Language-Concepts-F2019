@@ -13,3 +13,4 @@ if, t_if
 else, t_else
 void, t_type_void
 Void, t_type_void
+return, t_return

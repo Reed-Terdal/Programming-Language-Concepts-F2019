@@ -34,6 +34,15 @@ typedef enum Type
 }Type;
 
 /**
+ * Each user-defined function should have named parameters, when adding a function prototype the GArray should contain these elements so that the params can be added to the type table automatically
+ */
+typedef struct named_parameter
+{
+    GString * name;
+    Type type;
+}named_parameter;
+
+/**
  * This struct represents a single runtime variable that will be stored in either the global scope or a local scope.
  */
 typedef struct runtime_variable
@@ -80,13 +89,14 @@ void destroyRuntimeScopes();
 /**
  * @brief Used to create a new function. Used IN PLACE OF addIDToTable for functions specifically
  * @param function_id The id of the function to create a new prototype for
- * @param types[IN] A GArray which contains `Type` members (see above).
+ * @param types[IN] A GArray which contains `named_parameter` members (see above).
  *                  It should only use jint, jdouble, jstring, and jt_INVALID (for wildcards, ie print)
+ * @param retval The return type of the function, should be jf_int, jf_double, jf_str and jf_void
  * @note This will exit with an error if the function_id already exists, or if there is a bad `Type` in the types array.
  *                  A valid array should always be passed in, it can be empty if no parameters are required.
  *                  This function will take ownership of the types parameter, it will be freed after execution is complete.
  */
-void addFunctionPrototype(GString * function_id, GArray * types);
+void addFunctionPrototype(GString * function_id, GArray * types, Type retval);
 
 /**
  * @brief This is used to validate the parameters to a function call.
@@ -115,12 +125,13 @@ void parsing_exit_function_scope();
 /**
  * @brief Used during runtime to create a new scope of local variables in a function call
  * @param function_id The ID of the function being entered
+ * @param paramValues A GArray pointer containing void pointers to the values for the parameters to a function
  * @note Used exclusively during the execution phase.
  *       Can be called repeatedly before calling `runtime_exit_function_scope`.
  *       Will exit with an error if the function_id does not exist.
  *       Should always be followed by a call to `runtime_exit_function_scope` after the function returns.
  */
-void runtime_enter_function_scope(GString * function_id);
+void runtime_enter_function_scope(GString * function_id, GArray * paramValues);
 
 /**
  * @brief Used during runtime to exit a function scope and free any runtime variables belonging to it.
@@ -133,5 +144,7 @@ void runtime_exit_function_scope();
  * @brief This is a clean up utility called after execution to free all type tables and function prototype information.
  */
 void destroy_type_tables();
+
+gboolean in_function_scope();
 
 #endif //JOTT_INTERPRETTER_IDS_H
