@@ -11,3 +11,5 @@ for, t_for
 while, t_while
 if, t_if
 else, t_else
+void, t_type_void
+Void, t_type_void
