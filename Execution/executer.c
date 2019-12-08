@@ -21,7 +21,6 @@
 #include "for_node.h"
 #include "while_node.h"
 
-
 typedef struct string_meta string_meta;
 string_meta * evaluate_string_expression(s_expr * sExpr);
 void * evaluate_function(f_call * fCall);
