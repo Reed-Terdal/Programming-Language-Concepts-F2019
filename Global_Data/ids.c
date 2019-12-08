@@ -235,16 +235,16 @@ void initializeFunctionPrototypes()
         g_array_append_val(builtin_proto, param);
         g_hash_table_insert(function_prototypes, "print", builtin_proto);
 
-        builtin_proto = g_array_new(true, true, sizeof(Type));
+        builtin_proto = g_array_new(true, true, sizeof(named_parameter));
         param.type = jstring;
         g_array_append_val(builtin_proto, param);
         g_array_append_val(builtin_proto, param);
         g_hash_table_insert(function_prototypes, "concat", builtin_proto);
 
-        builtin_proto = g_array_new(true, true, sizeof(Type));
-        param.type = jint;
-        g_array_append_val(builtin_proto, param);
+        builtin_proto = g_array_new(true, true, sizeof(named_parameter));
         param.type = jstring;
+        g_array_append_val(builtin_proto, param);
+        param.type = jint;
         g_array_append_val(builtin_proto, param);
         g_hash_table_insert(function_prototypes, "charAt", builtin_proto);
     }
@@ -350,7 +350,7 @@ void checkFunctionParameters(GString * function_id, p_list * params)
         }
         current = current->next;
     }
-    if(current != NULL)
+    if(current != NULL && prototype->len > 0)
     {
         fprintf(stderr, "Function call has too many parameters for prototype");
         exit(-1);
@@ -535,14 +535,18 @@ void destroy_type_tables()
     function_type_tables = NULL;
 
 
-    named_scope * curScope = g_queue_peek_head(runtime_scope_stack);
-    while(curScope != NULL)
+    if(runtime_scope_stack != NULL)
     {
-        runtime_exit_function_scope();
-        curScope = g_queue_peek_head(runtime_scope_stack);
+
+        named_scope * curScope = g_queue_peek_head(runtime_scope_stack);
+        while(curScope != NULL)
+        {
+            runtime_exit_function_scope();
+            curScope = g_queue_peek_head(runtime_scope_stack);
+        }
+        g_queue_free(runtime_scope_stack);
+        runtime_scope_stack = NULL;
     }
-    g_queue_free(runtime_scope_stack);
-    runtime_scope_stack = NULL;
 }
 
 gboolean in_function_scope()
