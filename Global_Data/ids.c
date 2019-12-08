@@ -12,20 +12,8 @@
 
 #include <stdio.h>
 #include "ids.h"
-#include "expr.h"
+#include "function_node.h"
 
-static GHashTable *global_type_table = NULL;
-
-static GHashTable *global_scope = NULL;
-
-static GHashTable *function_prototypes = NULL;
-
-static GHashTable *function_type_tables = NULL;
-
-static GHashTable *active_function_type_table = NULL;
-static GString *active_function_type_table_name = NULL;
-
-static GQueue *runtime_scope_stack = NULL;
 
 typedef struct named_scope{
     GString * name;
@@ -55,6 +43,25 @@ gboolean addIDtoTable(GString *id, Type id_type)
         // Global scope
         return g_hash_table_insert(global_type_table, id->str, allocType);
     }
+}
+
+gpointer getIDVal(GString *id) {
+    if (global_type_table == NULL) {
+        initialize_type_table();
+    }
+
+    gpointer ret_val = NULL;
+    if (active_function_type_table != NULL) {
+        // Inside a function scope, check that type table first
+        ret_val = g_hash_table_lookup(active_function_type_table, id->str);
+    }
+
+    if (ret_val == NULL) {
+        // not in function scope or id is global
+        ret_val = g_hash_table_lookup(global_type_table, id->str);
+    }
+
+    return ret_val;
 }
 
 gboolean findIDType(GString *id, Type *ret_type)
@@ -552,4 +559,11 @@ void destroy_type_tables()
 gboolean in_function_scope()
 {
     return active_function_type_table_name != NULL;
+}
+
+gpointer get_function(GString *name) {
+    if (function_prototypes) {
+        return g_hash_table_lookup(function_prototypes, name->str);
+    }
+    return NULL;
 }

@@ -5,7 +5,7 @@ set(CMAKE_C_STANDARD 11)
 
 add_executable(jott
         main.c
-        Parser/parser.c Parser/parser.h Parser/Token.h Parser/Tree_Nodes/program.c Parser/Tree_Nodes/program.h Parser/Tree_Nodes/stmt_list.c Parser/Tree_Nodes/stmt_list.h Parser/Tree_Nodes/stmt.c Parser/Tree_Nodes/stmt.h Parser/Tree_Nodes/expr.c Parser/Tree_Nodes/expr.h Parser/Tree_Nodes/asmt.c Parser/Tree_Nodes/asmt.h Parser/Tree_Nodes/d_expr.c Parser/Tree_Nodes/d_expr.h Parser/Tree_Nodes/i_expr.c Parser/Tree_Nodes/i_expr.h Parser/Tree_Nodes/s_expr.c Parser/Tree_Nodes/s_expr.h Parser/Tree_Nodes/f_call.c Parser/Tree_Nodes/f_call.h Parser/Tree_Nodes/p_list.c Parser/Tree_Nodes/p_list.h Parser/Token.c
+        Parser/parser.c Parser/parser.h Parser/Token.h Parser/Tree_Nodes/program.c Parser/Tree_Nodes/program.h Parser/Tree_Nodes/stmt_list.c Parser/Tree_Nodes/stmt_list.h Parser/Tree_Nodes/stmt.c Parser/Tree_Nodes/stmt.h Parser/Tree_Nodes/expr.c Parser/Tree_Nodes/expr.h Parser/Tree_Nodes/asmt.c Parser/Tree_Nodes/asmt.h Parser/Tree_Nodes/d_expr.c Parser/Tree_Nodes/d_expr.h Parser/Tree_Nodes/i_expr.c Parser/Tree_Nodes/i_expr.h Parser/Tree_Nodes/s_expr.c Parser/Tree_Nodes/s_expr.h Parser/Tree_Nodes/f_call.c Parser/Tree_Nodes/f_call.h Parser/Tree_Nodes/function_node.h Parser/Tree_Nodes/function_node.c Parser/Tree_Nodes/f_stmt.h Parser/Tree_Nodes/f_stmt.c Parser/Tree_Nodes/f_stmt.c Parser/Tree_Nodes/f_stmt.h Parser/Tree_Nodes/p_list.c Parser/Tree_Nodes/p_list.h Parser/Token.c
         Scanner/scanner.c Scanner/scanner.h Scanner/scannerData.h Scanner/keyword_lookup.h
         Execution/executer.c Execution/executer.h
         Global_Data/ids.c Global_Data/ids.h
@@ -21,7 +21,6 @@ target_include_directories(jott PRIVATE
         Global_Data
         Execution
         )
-
 target_link_libraries(jott
         glib-2.0
         m

@@ -63,7 +63,7 @@ f_call * create_f_call(GArray * tokenStream, unsigned long index, unsigned long 
                     }
                     break;
                 default:
-                    fprintf(stderr, "Syntax Error: function call to non-function");
+                    fprintf(stderr, "Syntax Error: function call to non-function %i\n", id_type);
             }
         }
         else
@@ -76,7 +76,6 @@ f_call * create_f_call(GArray * tokenStream, unsigned long index, unsigned long 
         fprintf(stderr, "Syntax Error: unexpected token in function call");
         exit(-1);
     }
-
 
     return new_f_call;
 }

@@ -12,6 +12,7 @@
 
 #include <stdio.h>
 #include "expr.h"
+#include "function_node.h"
 
 expr * create_expr(GArray * token_stream, unsigned long index, unsigned long * next)
 {
@@ -62,6 +63,7 @@ expr * create_expr(GArray * token_stream, unsigned long index, unsigned long * n
         default:
             break;
     }
+
     switch (exprType)
     {
         case jf_int:

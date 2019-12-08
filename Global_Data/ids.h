@@ -18,6 +18,19 @@
 #include <glib.h>
 #include "p_list.h"
 
+
+static GHashTable *global_type_table = NULL;
+
+static GHashTable *global_scope = NULL;
+
+static GHashTable *function_prototypes = NULL;
+
+static GHashTable *function_type_tables = NULL;
+
+static GHashTable *active_function_type_table = NULL;
+static GString *active_function_type_table_name = NULL;
+
+static GQueue *runtime_scope_stack = NULL;
 /**
  * This enum defines all the values that an ID can have.
  */
@@ -146,5 +159,7 @@ void runtime_exit_function_scope();
 void destroy_type_tables();
 
 gboolean in_function_scope();
+
+gpointer get_function(GString *id);
 
 #endif //JOTT_INTERPRETTER_IDS_H

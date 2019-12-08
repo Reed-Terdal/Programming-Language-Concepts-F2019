@@ -6,7 +6,6 @@
 #define JOTT_FUNCTION_NODE_H
 
 #include <glib.h>
-#include "id_node.h"
 #include "f_stmt.h"
 
 typedef struct function_node {

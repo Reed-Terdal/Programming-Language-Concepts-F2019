@@ -13,6 +13,7 @@
 
 #include <stdio.h>
 #include "asmt.h"
+#include "function_node.h"
 
 asmt * create_asmt(GArray * tokenStream, unsigned long index, unsigned long * next)
 {
@@ -27,7 +28,6 @@ asmt * create_asmt(GArray * tokenStream, unsigned long index, unsigned long * ne
     Token * curToken = &g_array_index(tokenStream, Token, index); // Token is type
 
     asmt * new_asmt = calloc(1, sizeof(asmt));
-
 
     // Need to try expression before we add the ID, because it cannot be self-referencing
     new_asmt->expression = create_expr(tokenStream, index+3, next);

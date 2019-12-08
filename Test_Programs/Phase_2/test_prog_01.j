@@ -90,4 +90,26 @@ while(x > 0)
     x = x - 1;
 }
 
+Integer xa = 5;
+Integer za = 2;
+String ya = "foobar";
+Integer testfunc( Integer xa ){
+    String ya = "baz";
+    xa = xa - 1;
+    za = za - 1;
+    print( xa );
+    print( ya );
+    print( za );
+    return xa;
+}
+print( xa );
+print( ya );
+print( za );
+print("Running function now");
+Integer result = testfunc( 7 );
+print(result);
+print( xa );
+print( ya );
+print( za );
+
 print("done");

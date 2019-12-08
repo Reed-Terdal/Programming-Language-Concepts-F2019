@@ -6,11 +6,10 @@
 #define JOTT_F_STMT_H
 
 #include <glib.h>
-#include "stmt.h"
 #include "expr.h"
 
 typedef struct f_stmt{
-    stmt * statement;
+    struct stmt *statement;
     expr * ret_val;
     struct f_stmt * next;
 }f_stmt;

@@ -12,6 +12,7 @@
 
 #include <stdio.h>
 #include "stmt.h"
+#include "function_node.h"
 
 stmt * create_stmt(GArray * token_stream, unsigned long index, unsigned long * next)
 {
@@ -23,8 +24,7 @@ stmt * create_stmt(GArray * token_stream, unsigned long index, unsigned long * n
     // 3. Expression
 
     Token * curToken = &g_array_index(token_stream, Token, index);
-    switch (curToken->type)
-    {
+    switch (curToken->type) {
         case t_plus:
         case t_minus:
         case t_integer:
@@ -34,24 +34,32 @@ stmt * create_stmt(GArray * token_stream, unsigned long index, unsigned long * n
             new_statement->expression = create_expr(token_stream, index, next);
             (*next)++;
             break;
-        case t_id:
-        {
+        case t_type_double:
+        case t_type_integer:
+        case t_type_string: {
+            Token *second = &g_array_index(token_stream, Token, index + 2);
+            if (second->type == t_assign) {
+                // This is a re-assign
+                new_statement->assignment = create_asmt(token_stream, index, next);
+            } else if (second->type == t_start_paren) {
+                // 2. Assignment
+                new_statement->func_node = create_function_node(token_stream, index, next);
+            }
+            break;
+        }
+        case t_id: {
             // Could be function call or expression
             Type id_type;
-            if(findIDType(curToken->data, &id_type))
-            {
-                switch (id_type)
-                {
+            bool is_function = false;
+            if (findIDType(curToken->data, &id_type)) {
+                switch (id_type) {
                     case jf_void:
                         // Function call
                         new_statement->function_call = create_f_call(token_stream, index, next);
                         curToken = &g_array_index(token_stream, Token, *next);
-                        if(curToken->type == t_end_stmt)
-                        {
+                        if (curToken->type == t_end_stmt) {
                             (*next)++;
-                        }
-                        else
-                        {
+                        } else {
                             fprintf(stderr, "Syntax Error: Unexpected token at end of statement");
                             exit(-1);
                         }
@@ -61,49 +69,49 @@ stmt * create_stmt(GArray * token_stream, unsigned long index, unsigned long * n
                     case jf_int:
                     case jint:
                     case jdouble:
-                    case jstring:
-                        curToken = &g_array_index(token_stream, Token, index+1);
-                        if(curToken->type == t_assign)
-                        {
+                    case jstring: {
+                        gpointer function = get_function(g_array_index(token_stream, Token, index).data);
+                        if (function) {
+                            // Function call
+                            new_statement->function_call = create_f_call(token_stream, index, next);
+                            curToken = &g_array_index(token_stream, Token, *next);
+                            if (curToken->type == t_end_stmt) {
+                                (*next)++;
+                            } else {
+                                fprintf(stderr, "Syntax Error: Unexpected token at end of statement");
+                                exit(-1);
+                            }
+                            break;
+                        }
+                        Token *curToken = &g_array_index(token_stream, Token, index + 1);
+                        if (curToken->type == t_assign) {
                             // This is a re-assign
                             new_statement->reassign = create_r_asmt(token_stream, index, next);
-                        }
-                        else
-                        {
+                        } else {
                             // Expression
                             new_statement->expression = create_expr(token_stream, index, next);
-                            curToken = &g_array_index(token_stream, Token, *next);
                         }
 
                         curToken = &g_array_index(token_stream, Token, *next);
-                        if(curToken->type == t_end_stmt)
-                        {
+                        if (curToken->type == t_end_stmt) {
                             (*next)++;
-                        }
-                        else
-                        {
+                        } else {
                             fprintf(stderr, "Syntax Error: Unexpected token at end of statement");
                             exit(-1);
                         }
                         break;
-                    default:
-                        fprintf(stderr, "Syntax Error: identifier has an unknown type");
+                        default:
+                            fprintf(stderr, "Syntax Error: identifier has an unknown type");
                         exit(-1);
+                    }
                 }
-            }
-            else
-            {
+            } else {
                 fprintf(stderr, "Syntax Error: Use of undefined identifier in statement");
                 exit(-1);
             }
         }
             break;
-        case t_type_double:
-        case t_type_integer:
-        case t_type_string:
-            // 2. Assignment
-            new_statement->assignment = create_asmt(token_stream, index, next);
-            break;
+
         case t_if:
             new_statement->ifBlock = create_if_node(token_stream, index, next);
             break;
@@ -115,11 +123,9 @@ stmt * create_stmt(GArray * token_stream, unsigned long index, unsigned long * n
             break;
         default:
             // Unexpected token when creating Statement, not function call, assignment, or expression
-            fprintf(stderr, "Syntax Error: Unexpected Token when creating statement");
+            fprintf(stderr, "Syntax Error: Unexpected Token when creating statement %s", curToken->data->str);
             exit(-1);
     }
-
-
     return new_statement;
 }
 
@@ -211,6 +217,14 @@ GString * stmt_to_json(stmt * statement)
         {
             g_string_append(retVal, "null");
         }
+        g_string_append(retVal, ", \"User Function\": ");
+        if (statement->func_node != NULL) {
+            GString *child = function_node_to_json(statement->func_node);
+            g_string_append(retVal, child->str);
+            g_string_free(child, TRUE);
+        } else {
+            g_string_append(retVal, "null");
+        }
 
         g_string_append_c(retVal, '}');
     }
@@ -252,6 +266,9 @@ void destroy_stmt(stmt * statement)
         if(statement->forLoop != NULL)
         {
             destroy_for_node(statement->forLoop);
+        }
+        if (statement->func_node != NULL) {
+            destroy_function_node(statement->func_node);
         }
         free(statement);
     }
